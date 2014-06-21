@@ -33,7 +33,7 @@
 var testEle = document.createElement( 'div' );
 function isSupported( props ) {
     var s = testEle.style, p;
-    for ( i = 0; i < props.length; i++ ) {
+    for (var  i = 0; i < props.length; i++ ) {
         p = props[i];
         if ( s[p] !== undefined ) {
             return true;

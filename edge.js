@@ -27,12 +27,12 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE.
 
-//# sourceMappingURL=edge.3.0.0.min.map
+//# sourceMappingURL=edge.4.0.0.min.map
 
-   3.0.0.322
+   4.0.0.359
 */
-// Edge Animate Runtime 3.0.0.322
-// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// Edge Animate Runtime 4.0.0.359
+// Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -355,7 +355,7 @@ jQuery.extend( jQuery.easing,
         $.Edge = window.AdobeEdge;
     }
     var Edge = $.Edge;
-    Edge.version = "3.0.0";
+    Edge.version = "4.0.0";
     
     Edge.cloneJSONObject = function(obj)
     {
@@ -507,7 +507,7 @@ jQuery.extend( jQuery.easing,
     var testEle = document.createElement( 'div' );
     function isSupported( props ) {
         var s = testEle.style, p;
-        for ( i = 0; i < props.length; i++ ) {
+        for ( var i = 0; i < props.length; i++ ) {
             p = props[i];
             if ( s[p] !== undefined ) {
                 return true;
@@ -527,6 +527,21 @@ jQuery.extend( jQuery.easing,
             supported['wav'] = !!a.canPlayType('audio/wav; codecs="1"').replace(/no/, '');
             supported['ogg'] = !!a.canPlayType('audio/ogg; codecs="vorbis"').replace(/no/, '');
             supported['oga'] = supported['ogg'];
+        }
+
+        return supported;
+    }
+
+    function supportedVideo() {
+        var v = document.createElement('video'),
+            supported = {};
+
+
+        if (v.canPlayType) {
+            supported['webm'] = !!v.canPlayType('video/webm').replace(/no/, '');
+            supported['mp4'] = !!v.canPlayType('video/mp4;').replace(/no/, '');
+    	    supported['ogv'] = !!v.canPlayType('video/ogg; codecs="theora, vorbis"').replace(/no/, '');
+            supported['ogg'] = !!v.canPlayType('video/ogg; codecs="theora, vorbis"').replace(/no/, '');
         }
 
         return supported;
@@ -562,13 +577,15 @@ jQuery.extend( jQuery.easing,
     //window.console.log("3d support = " + supported.cssTransform3d);
     supported.originIncludesBorders = originIncludesBorders();
     supported.audio = supportedAudio();
+    supported.video = supportedVideo();
+    
     Edge.isSupported = isSupported;
 
 
 })( jQuery );
 // edge.timeline.js
 //
-// Copyright (c) 2010-2013. Adobe Systems Incorporated.
+// Copyright (c) 2010-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -1391,7 +1408,7 @@ jQuery.extend( jQuery.easing,
 })(jQuery, window.AdobeEdge);
 // Edge.property-tween.js
 //
-// Copyright (c) 2010-2013. Adobe Systems Incorporated.
+// Copyright (c) 2010-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -1728,7 +1745,7 @@ jQuery.extend( jQuery.easing,
                     if( isWebkit && prop === 'background-size' ) {
                         $this.css('-webkit-background-size', val);
                     }
-                    if (prop === "display" && ($this.is("audio") || $this.is("video"))) {
+                    if (prop === "display" && ($this.is("audio"))) {
                         $this.attr("controls", val === "none" ? null : "controls");
                     }
                     break;
@@ -1967,7 +1984,7 @@ jQuery.extend( jQuery.easing,
 })(jQuery, AdobeEdge);
 /// Edge.transform-tween.js
 //
-// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -3459,7 +3476,7 @@ jQuery.extend( jQuery.easing,
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween);
 /// edge.color-tween.js
 //
-// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -3946,7 +3963,7 @@ jQuery.extend( jQuery.easing,
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween);
 /// edge.subproperty-tween.js
 //
-// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -4245,7 +4262,7 @@ jQuery.extend( jQuery.easing,
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween, AdobeEdge.ColorTween);
 /// edge.gradient-tween.js
 //
-// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -4299,7 +4316,7 @@ jQuery.extend( jQuery.easing,
             var lt = opts.fromValue[ci].length < val[ci].length ? opts.fromValue[ci] : val[ci];
             var gt = lt == val[ci] ? opts.fromValue[ci] : val[ci];
 
-            for(i=lt.length;i<gt.length;i++)
+            for(var i=lt.length;i<gt.length;i++)
                 lt[i] = lt[i-1];
         }
         Edge.PropertyTween.call(this, tweenType, elements, property, val, opts);
@@ -4441,7 +4458,7 @@ jQuery.extend( jQuery.easing,
                     repeating = val[5];
             }
 
-            for (i=0;i<(colorstops.length);i++) {
+            for (var i=0;i<(colorstops.length);i++) {
                 var parsedColor = Edge.Color.parseValue(colorstops[i][0]);
                 if (parsedColor) {
                     colorstopValues = colorstopValues.concat(parsedColor);
@@ -4509,7 +4526,7 @@ jQuery.extend( jQuery.easing,
             return;
 
         var numberOfColors = Math.floor((values.length - colorstopIndex - 1) / 5);
-        for (i=0;i<numberOfColors;i++) {
+        for (var i=0;i<numberOfColors;i++) {
             var firstIndex = i * 5 + colorstopIndex;
             formattedValue += Edge.Color.formatValue(values.slice(firstIndex, firstIndex+4)); // format the color using the color-tween formatting code
             if (values[firstIndex+4] !== -1)
@@ -4527,7 +4544,7 @@ jQuery.extend( jQuery.easing,
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween);
 /// Edge.motion-tween.js
 //
-// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -5214,7 +5231,7 @@ jQuery.extend( jQuery.easing,
 })(jQuery, AdobeEdge);
 // edge.symbol.js
 //
-// Copyright (c) 2010-2013. Adobe Systems Incorporated.
+// Copyright (c) 2010-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -6222,7 +6239,7 @@ jQuery.extend( jQuery.easing,
                     }
                     sel = substituteVariables(r, this.variableValues);
                     var key = decl[0] + ":" + sel + ":" + decl[1];
-                    if ((decl[0] === 'style' || decl[0] === 'transform' || decl[0] === 'color' || decl[0] === 'subproperty' || decl[0] === 'gradient')/* && !tdict[key]*/) {
+                    if ((decl[0] === 'style' || decl[0] === 'transform' || decl[0] === 'color' || decl[0] === 'subproperty' || decl[0] === 'gradient' || decl[0] === 'property')/* && !tdict[key]*/) {
                         if (!cache[sel]) {
                             cache[sel] = [];
                         }
@@ -6345,6 +6362,9 @@ jQuery.extend( jQuery.easing,
                             transform = {};
                         }
                         transform[prop] = rule[i].value;
+                    }
+                    else if (decl[0] === "property") {
+                        $(sel).get(0)[prop] = rule[i].value;
                     }
                     else if (decl[0] === "subproperty") {
                         if (!subprops) {
@@ -6699,6 +6719,23 @@ jQuery.extend( jQuery.easing,
             _stop.call(this, tlName, { dontNotify: true });
             return this.playTimeline(tlName, pos, executeTriggers, options);
         },
+        
+        /**
+        Play a timeline and also timeline of children from current position
+        @name playAll
+        @memberOf Edge.Symbol.prototype
+        @function
+        @return - null
+        **/
+        playAll: function () {
+        	this.play();
+        	var childSymbols = this.getChildSymbols();
+        	for(var i=0; i<childSymbols.length; i++) // Return the number of direct children    
+        	{
+        	   childSymbols[i].playAll(); // play all of the children
+        	}
+        	return;
+        },
         /**
          Play a timeline from the position, or optionally, the current pos.
          @name play
@@ -6852,6 +6889,22 @@ jQuery.extend( jQuery.easing,
          **/
         stop: function (pos, options) {
             return this.stopTimeline(_getDefltTL.call(this), pos, options);
+        },
+        /**
+        Stop the default timeline at its current position and also stop all child symbols
+        @name stopAll
+        @memberOf Edge.Symbol.prototype
+        @function
+        @return - null
+        **/
+        stopAll: function () {
+        	this.stop();
+        	var childSymbols = this.getChildSymbols();
+        	for(var i=0; i<childSymbols.length; i++) // Return the number of direct children    
+        	{
+        	   childSymbols[i].stopAll(); // stop all of the children
+        	}
+        	return;
         },
         /**
          Stop a timeline at its current position.
@@ -8422,6 +8475,10 @@ jQuery.extend( jQuery.easing,
 
     Edge.getCompositionResources = getCompositionResources;
 
+    function getCompositionOpts(compId) {
+        return Edge.compositionOpts[compId];
+    }
+
     Edge.getComposition = function (compId) {
         if (!compId) {
             return;
@@ -8562,14 +8619,20 @@ jQuery.extend( jQuery.easing,
         }
 
         this.symbolInstances = [];
-        this.imageRequestCount = 0;
-        this.imageRequestList = [];
+        //this.imageRequestCount = 0;
+        this.resourceRequestCount = 0;
+        //this.imageRequestList = [];
+        this.resourceRequestList = [];
+        //this.audioRequestList = [];
+        //this.videoRequestList = [];
         this.readyList = [];
         this.readyCalled = false; // refers to our $.ready handler, not our ready fn
         this.$loadCalled = window.AdobeEdge.loaded;
         Edge.compositions[compId] = this; // We only support one comp for each defn at this time
         this.compReadyCalled = false;
-        this.preloadAudio = Edge.compositionOpts[compId].preloadAudio;
+        //this.preloadAudio = Edge.compositionOpts[compId].preloadAudio;
+        this.gAudioPreloadPreference = Edge.compositionOpts[compId].gAudioPreloadPreference;
+        this.gVideoPreloadPreference = Edge.compositionOpts[compId].gVideoPreloadPreference;
 
         if (resources) {
             for (i = 0; i < resources.length; i++) {
@@ -8605,14 +8668,14 @@ jQuery.extend( jQuery.easing,
         }
 
         if (window.AdobeEdge.loaded) {
-            if (comp.imageRequestCount <= 0) {
+            if (comp.resourceRequestCount <= 0) {
                 comp.callReadyList();
             }
         }
         else {
             $(window).load(function () {
                 comp.$loadCalled = true;
-                if (comp.imageRequestCount <= 0) {
+                if (comp.resourceRequestCount <= 0) {
                     comp.callReadyList();
                 }
             });
@@ -8686,23 +8749,23 @@ jQuery.extend( jQuery.easing,
                     return null;
                 }
             }
-            this.imageRequestCount++;
+            this.resourceRequestCount++;
             var comp = this,
                 img = new Image(),
                 $img = $(img);
 
-            this.imageRequestList.push(img);
+            this.resourceRequestList.push(img);
             function handler() {
                 $img.unbind("load");
                 $img.unbind("error");
-                for (var i = 0; i < comp.imageRequestList.length; i++) {
-                    if (comp.imageRequestList[i] === img) {
-                        comp.imageRequestList.splice(i, 1);
+                for (var i = 0; i < comp.resourceRequestList.length; i++) {
+                    if (comp.resourceRequestList[i] === img) {
+                        comp.resourceRequestList.splice(i, 1);
                         break;
                     }
                 }
-                comp.imageRequestCount--;
-                if (comp.imageRequestCount <= 0 && comp.$loadCalled) {
+                comp.resourceRequestCount--;
+                if (comp.resourceRequestCount <= 0 && comp.$loadCalled) {
                     setTimeout(function () {
                         comp.callReadyList();
                     }, 0);
@@ -8714,9 +8777,17 @@ jQuery.extend( jQuery.easing,
             img.src = imageURL;
             return null;
         },
-        requestAudio: function (aAudioURLs) {
+        requestAudio: function (aAudioURLs, sPreloadVal) {
             var bResult = true;
-            if (this.preloadAudio !== false) {
+            var bDoLoad = false;
+
+            if (sPreloadVal === null || sPreloadVal == "")
+                bDoLoad = this.gAudioPreloadPreference == "auto";
+            else {
+                bDoLoad = sPreloadVal == "auto";
+            }
+
+            if (bDoLoad) {
                 if (isiOS())
     				return bResult;
 
@@ -8732,14 +8803,14 @@ jQuery.extend( jQuery.easing,
                     //$aud.unbind("load");
                     //$aud.unbind("error");
                     $aud.off("canplaythrough");
-                    for (i = 0; i < comp.imageRequestList.length; i++) {
-                        if (comp.imageRequestList[i] === aud) {
-                            comp.imageRequestList.splice(i, 1);
+                    for (i = 0; i < comp.resourceRequestList.length; i++) {
+                        if (comp.resourceRequestList[i] === aud) {
+                            comp.resourceRequestList.splice(i, 1);
                             break;
                         }
                     }
-                    comp.imageRequestCount--;
-                    if (comp.imageRequestCount <= 0 && comp.$loadCalled) {
+                    comp.resourceRequestCount--;
+                    if (comp.resourceRequestCount <= 0 && comp.$loadCalled) {
                         setTimeout(function () {
                             comp.callReadyList();
                         }, 0);
@@ -8753,8 +8824,8 @@ jQuery.extend( jQuery.easing,
                     ext = aAudioURLs[j].split('.');
                     ext = ext[ext.length - 1].toLowerCase();
                     if (Edge.supported.audio[ext]) {
-                        this.imageRequestCount++;
-                        this.imageRequestList.push(aud);
+                        this.resourceRequestCount++;
+                        this.resourceRequestList.push(aud);
                         /*
                         The most reliable place to give ok to load the comp
                         is when we handle 'canplaythrough'.
@@ -8771,6 +8842,92 @@ jQuery.extend( jQuery.easing,
                 }
 
                 if (!bSupportedAudioFound)
+                    bResult = false;
+
+            }
+            return bResult;
+        },
+
+
+	requestVideo: function (aVideoURLs, sPreloadVal) {
+            var bResult = true;
+            var bDoLoad = false;
+
+            if (sPreloadVal === null || sPreloadVal == "")
+                bDoLoad = this.gAudioPreloadPreference == "auto";
+            else {
+                bDoLoad = sPreloadVal == "auto";
+            }
+
+
+
+            if (bDoLoad) {
+                if (isiOS())
+    		    return bResult;
+                /*
+                var comp = this,
+                    vid = new Video(),
+                    $vid = $(vid),
+                    aVideoURLs,
+                    i,
+                    j,
+                    ext;
+                */
+
+        		var comp = this;
+                // this doesn't work because there is no contructor Video()
+                // var vid = new Video();
+        		var vid = document.createElement('video');
+                
+                var $vid = $(vid);
+                var aVideoURLs;
+                var i;
+                var j;
+                var ext;
+		
+                function handler() {
+                    //$vid.unbind("load");
+                    //$vid.unbind("error");
+                    $vid.off("canplaythrough");
+                    for (i = 0; i < comp.resourceRequestList.length; i++) {
+                        if (comp.resourceRequestList[i] === vid) {
+                            comp.resourceRequestList.splice(i, 1);
+                            break;
+                        }
+                    }
+                    comp.resourceRequestCount--;
+                    if (comp.resourceRequestCount <= 0 && comp.$loadCalled) {
+                        setTimeout(function () {
+                            comp.callReadyList();
+                        }, 0);
+                    }
+                }
+
+                var bSupportedVideoFound = false;
+
+                for (j = 0; j < aVideoURLs.length; j++) {
+                    // get the extension
+                    ext = aVideoURLs[j].split('.');
+                    ext = ext[ext.length - 1].toLowerCase();
+                    if (Edge.supported.video[ext]) {
+                        this.resourceRequestCount++;
+                        this.resourceRequestList.push(vid);
+                        /*
+                        The most reliable place to give ok to load the comp
+                        is when we handle 'canplaythrough'.
+                        if we give out signal only when load event happened,
+                        then we end up starting to play audio when the buffer
+                        doesn't have enough data to play.
+                        */
+                        $vid.on("canplaythrough", handler);
+                        vid.src = aVideoURLs[j];
+                        
+                        bSupportedVideoFound = true;
+                        break;
+                    }
+                }
+
+                if (!bSupportedVideoFound)
                     bResult = false;
 
             }
@@ -8822,7 +8979,7 @@ jQuery.extend( jQuery.easing,
             if (this.readyCalled) {
                 return;
             }
-            this.imageRequestList = [];
+            this.resourceRequestList = [];
             this.readyCalled = true;
 
             // Let the preloader know we're ready to go
@@ -9063,7 +9220,7 @@ jQuery.extend( jQuery.easing,
 *
 */
 
-//Copyright (c) 2011-2013. Adobe Systems Incorporated.
+//Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -9200,7 +9357,7 @@ jQuery.extend( jQuery.easing,
 })( jQuery, this );
 /// edge.declare.js
 //
-// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// Copyright (c) 2011-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -9257,6 +9414,8 @@ jQuery.extend( jQuery.easing,
             ["tabindex", "ti"],
             ["controls", "cn"],
             ["source", "sr"],
+            ["poster", "ps"],
+            ["preload", "pr"],
             ["cursor", "cu"],
             ["autoplay", "ap"],
             ["loop", "lp"],
@@ -9380,7 +9539,7 @@ jQuery.extend( jQuery.easing,
                 
                 if(oN.display) {
                     eleNew.style.display = oN.display;
-                    if (sType === "audio" || sType === "video") {
+                    if (sType === "audio") {
                         $eleNew.attr("controls", oN.display === "none" ? null : "controls");
                     }
                 }
@@ -9491,29 +9650,72 @@ jQuery.extend( jQuery.easing,
             
             //source (sr)
             if(oN.sr) {
-
-                if(oN.sr.length == 1) {
-                    $eleNew.attr("src", oN.sr[0]);
-                    if(!comp.requestAudio([oN.sr[0]])){
-                        console.log("There was no supported audio!!!");
-                        return null;
+        	    if (sType === "audio"){
+        		    if(oN.sr.length == 1) {
+        		        $eleNew.attr("src", oN.sr[0]);
+                        
+        			    if(!comp.requestAudio([oN.sr[0]], oN.preload)){
+                            console.log("There was no supported audio!!!");
+                            return null;
+        			    }
                     }
-                }
-                else {
-                    var aSources = new Array();
-                    for(var iS=0;iS<oN.sr.length;iS++) {
-                        aSources.push(oN.sr[iS]);
-                        var eleSrc = document.createElement("source");
-                        $(eleSrc).attr("src",oN.sr[iS]);
-                        eleNew.appendChild(eleSrc);
+                    else {
+            			var aSources = new Array();
+            			for(var iS=0;iS<oN.sr.length;iS++) {
+                            aSources.push(oN.sr[iS]);
+                            var eleSrc = document.createElement("source");
+                            $(eleSrc).attr("src",oN.sr[iS]);
+                            eleNew.appendChild(eleSrc);
+            			}
+            			if(!comp.requestAudio(aSources, oN.preload)){
+                            console.log("There was no supported audio!!!");
+                            return null;
+            			}
                     }
-                    if(!comp.requestAudio(aSources)){
-                        console.log("There was no supported audio!!!");
-                        return null;
+		    
+        		} else if (sType === "video") {
+                    if(oN.sr.length == 1) {
+                        $eleNew.attr("src", oN.sr[0]);
+                        
+                        if(!comp.requestVideo([oN.sr[0]], oN.preload)){
+                            console.log("There was no supported video!!!");
+                            return null;
+                        }
                     }
-                }
+                    else {
+                        var aSources = new Array();
+                        for(var iS=0;iS<oN.sr.length;iS++) {
+                            aSources.push(oN.sr[iS]);
+                            var eleSrc = document.createElement("source");
+                            $(eleSrc).attr("src",oN.sr[iS]);
+                            eleNew.appendChild(eleSrc);
+                        }
+                        if(!comp.requestVideo(aSources, oN.preload)){
+                            console.log("There was no supported audio!!!");
+                            return null;
+                        }
+                    }
+        		}
+		
+                
             }
             
+            //poster (ps)
+            if(oN.poster) {
+                $eleNew.attr("poster", oN.poster);
+                comp.requestImage(oN.poster);
+            }
+
+            //controls
+            if(oN.controls) {
+                $eleNew.attr("controls", oN.poster);
+            }            
+
+            // preload
+            if(oN.preload) {
+                $eleNew.attr("preload", oN.preload);
+                // none, metadata, auto
+            }
             //cursor (cu)
             if(oN.cu) {
                 $eleNew.css("cursor", oN.cu);
