@@ -1,0 +1,26 @@
+{
+  "name": "edge-runtime",
+  "version": "1.0.0",
+  "homepage": "https://github.com/wittnl/Edge-Animate-Runtime",
+  "authors": [
+    "Adobe Systems Incorporated"
+  ],
+  "description": "Runtime for Adobe Edge Animate",
+  "keywords": [
+    "Adobe",
+    "Edge",
+    "Animate"
+  ],
+  "license": "Copyrighted by Adobe Systems Incorporated",
+  "main": "edge.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "1.7.1"
+  }
+}
