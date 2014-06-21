@@ -1,3 +1,37 @@
+/**
+   @license
+   Copyright (c) 2011-2014. Adobe Systems Incorporated.
+   All rights reserved.
+  
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
+  
+     * Redistributions of source code must retain the above copyright notice,
+       this list of conditions and the following disclaimer.
+     * Redistributions in binary form must reproduce the above copyright notice,
+       this list of conditions and the following disclaimer in the documentation
+       and/or other materials provided with the distribution.
+     * Neither the name of Adobe Systems Incorporated nor the names of its
+       contributors may be used to endorse or promote products derived from this
+       software without specific prior written permission.
+  
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   POSSIBILITY OF SUCH DAMAGE.
+
+//# sourceMappingURL=edge.3.0.0.min.map
+
+   3.0.0.322
+*/
+// Edge Animate Runtime 3.0.0.322
 // Copyright (c) 2011-2013. Adobe Systems Incorporated.
 // All rights reserved.
 //
@@ -24,11 +58,6 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-//
-// Version 2.0.1
-
-
-// Filename: edge.js
 
 /* global Zepto: true
 */
@@ -109,6 +138,7 @@ window.AdobeEdge = window.AdobeEdge || {};
         }
     };
 
+/* Include the whole of jQuery easing */
 /*
  * jQuery Easing v1.3 - http://gsgd.co.uk/sandbox/jquery/easing/
  *
@@ -318,14 +348,14 @@ jQuery.extend( jQuery.easing,
 
     /**
      @name Edge
-     @namespace Edge is the namespace for all classes and methods for the Edge runtime and authortime frameworks
+     @namespace Edge is the namespace for all classes and methods for the Edge runtime and authoring-time frameworks
      **/
     window.AdobeEdge = window.AdobeEdge || {};
     if (typeof $.Edge === "undefined"){
         $.Edge = window.AdobeEdge;
     }
     var Edge = $.Edge;
-    Edge.version = "2.0.0";
+    Edge.version = "3.0.0";
     
     Edge.cloneJSONObject = function(obj)
     {
@@ -464,8 +494,10 @@ jQuery.extend( jQuery.easing,
         return str.replace(/^\s+|\s+$/g,"");
     };
 
-    var edgeConsole = {};
 
+    // Add some console stubs so we can use these without checking every time
+    // IE only creates a console if debugging
+    var edgeConsole = {};
     edgeConsole.log = function(s){ };
     edgeConsole.trace = function() { };
     if(typeof window.console == "undefined") {
@@ -484,9 +516,27 @@ jQuery.extend( jQuery.easing,
         return false;
     }
 
+    function supportedAudio() {
+        var a = document.createElement('audio'),
+            supported = {};
+
+        if (a.canPlayType) {
+            supported['m4a'] = !!a.canPlayType('audio/mp4; codecs="mp4a.40.2"').replace(/no/, '');
+            supported['aac'] = supported['m4a'];
+            supported['mp3'] = !!a.canPlayType('audio/mpeg;').replace(/no/, '');
+            supported['wav'] = !!a.canPlayType('audio/wav; codecs="1"').replace(/no/, '');
+            supported['ogg'] = !!a.canPlayType('audio/ogg; codecs="vorbis"').replace(/no/, '');
+            supported['oga'] = supported['ogg'];
+        }
+
+        return supported;
+    }
+
     // check for border-width being in transform-origin or not
     function originIncludesBorders() {
         var ele = document.createElement('div');
+        // TODO: Inside the tool, this stops us from getting the correct value
+        //there is a counter-balancing fix in motion-tween originInPx()
         if (document.body != null) {
             document.body.appendChild(ele);
         }
@@ -501,7 +551,7 @@ jQuery.extend( jQuery.easing,
         if (ele.parentNode != null) {
             ele.parentNode.removeChild(ele);
         }
-
+        
         return sOrigin != sOrigin2;
     }
 
@@ -511,13 +561,40 @@ jQuery.extend( jQuery.easing,
     supported.cssTransform3d = isSupported( ['perspectiveProperty', 'WebkitPerspective', 'MozPerspective', 'OPerspective', 'msPerspective'] );
     //window.console.log("3d support = " + supported.cssTransform3d);
     supported.originIncludesBorders = originIncludesBorders();
+    supported.audio = supportedAudio();
     Edge.isSupported = isSupported;
 
 
 })( jQuery );
-
-
-// Filename: edge.timeline.js
+// edge.timeline.js
+//
+// Copyright (c) 2010-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
 
 (function($, Edge){
 
@@ -772,6 +849,7 @@ jQuery.extend( jQuery.easing,
 
     Timeline.config = timelineDefaultConfig;
     var timerFuncs = [];
+    var universalTickTime = 0;
 
     /**
      Update all timelines driven by an external clock. To use an external clock, pass 'externalClock:true'
@@ -787,12 +865,14 @@ jQuery.extend( jQuery.easing,
         var funcs = timerFuncs.slice(0);
         timerFuncs = [];
         var len = funcs.length, tickTime = (new Date()).getTime();
+        universalTickTime = tickTime;
         for(var i = 0; i < len; i++){
             var f = funcs[i];
             if ( typeof f !== "undefined" ) {
                 f.call( null, tickTime );
             }
         }
+        universalTickTime = 0;
     };
 
     $.extend(Timeline.prototype, Animation.prototype, {
@@ -832,7 +912,7 @@ jQuery.extend( jQuery.easing,
 
             this._setup(this, playContext);
 
-            this.timerStart = (new Date()).getTime();
+            this.timerStart = universalTickTime || (new Date()).getTime();
             this.startPosition = this.currentPosition;
 
             var self = this;
@@ -942,9 +1022,6 @@ jQuery.extend( jQuery.easing,
         sort: function() {
             
             if(!this.sorted) {
-                
-                //TBD: not sure if we should override this in Motion Path tween or if it is OK for it to be global behavior...
-                
                 var sortPref = { "width": 1, "height": 2, "-webkit-transform-origin": 3, "transform-origin": 4, "-moz-transform-origin": 5, "-ms-transform-origin": 6, "left": 7, "top": 8, "bottom": 9, "right": 10, "motion": 11 },
                     i,
                     obj,
@@ -955,7 +1032,7 @@ jQuery.extend( jQuery.easing,
                     var aniA = a.animation,
                         aniB = b.animation;
                     
-                    //this is just defensive, it probably never executes
+                    //this is just defensive, it should never execute
                     if (!aniA && !aniB) {
                         return a.position - b.position;
                     } else if (!aniA) {
@@ -1270,6 +1347,12 @@ jQuery.extend( jQuery.easing,
         return new Trigger(handler, data, handlerContext);
     };
 
+    Edge.Timeline.createTriggerFromData = function (timeline, data) {
+        var args = data.trigger.slice(0, 2);
+        args.push(timeline);
+        return  Edge.Timeline.createTrigger.apply(null, args);
+    };
+
     /**
      Create a new timeline from JSON data
      @name createTimeline
@@ -1294,9 +1377,7 @@ jQuery.extend( jQuery.easing,
                 s = Edge.Timeline.createTween.apply(null, d.tween);
             }
             else if(d.trigger) {
-                var args = d.trigger.slice(0, 2);
-                args.push(this);
-                s = Edge.Timeline.createTrigger.apply(null, args);
+                s = Edge.Timeline.createTriggerFromData(this, d);
             }
 
             if ( s ) {
@@ -1308,8 +1389,35 @@ jQuery.extend( jQuery.easing,
     };
 
 })(jQuery, window.AdobeEdge);
-
-// Filename: edge.property-tween.js
+// Edge.property-tween.js
+//
+// Copyright (c) 2010-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
 
 (function($, Edge){
 
@@ -1370,6 +1478,7 @@ jQuery.extend( jQuery.easing,
 
         // Convert all "to" values specified into an array of objects
         // that specify the value and unit to drive to.
+        // TODO - move all the value setting to setupForAnimation, and move the to and from values to the context
 
         var values = this.toValues = [];
         var valueArray = this.parseValue(val);
@@ -1386,7 +1495,6 @@ jQuery.extend( jQuery.easing,
         for (i = 0; i < len; i++)
         {
             v = valueArray[i];
-            //v = PropertyTween.substituteVariables(v, opts); // This should be done at setupForAnimation time, in the context
             var o = {};
             if (typeof v == 'string') {
                 o.value = parseFloat(v.replace(/[a-zA-Z%]+$/,""));
@@ -1404,12 +1512,6 @@ jQuery.extend( jQuery.easing,
             }
             values.push(o);
         }
-
-        //if (val.length > 1 && !this.valueTemplate)
-        //    alert("Multiple values specified for attribute tween, but no template was provided!");
-
-        //if (val.length > 1 && (!this.fromValue || !$.isArray(this.fromValue)))
-        //    alert("Multiple values specified for attribute tween, but no from values specified!");
 
         var len;
         if (this.fromValue)
@@ -1506,7 +1608,6 @@ jQuery.extend( jQuery.easing,
         	var varName = PropertyTween.parseVariableName(str);
 
             if (typeof variables[varName] == "undefined") {
-                //console.log("Animation variable ${" + varName + "} is undefined!");
                 str = undefined;
             }
             else
@@ -1603,7 +1704,6 @@ jQuery.extend( jQuery.easing,
                     val = results.join("");
                 }
 
-                //console.log(this.id + ": " + prop + " = " + val);
                 tween.setValue.call(this, tt, prop, val);
                 tween.notifyObservers("onUpdate", { elapsed: elapsed, easingConst: easingConst, property: prop, value: val, element: this });
             });
@@ -1623,9 +1723,13 @@ jQuery.extend( jQuery.easing,
         setValue: function (tt, prop, val) {
             switch (tt) {
                 case 0:
-                    $(this).css(prop, val);
+                    var $this = $(this);
+                    $this.css(prop, val);
                     if( isWebkit && prop === 'background-size' ) {
-                        $(this).css('-webkit-background-size', val);
+                        $this.css('-webkit-background-size', val);
+                    }
+                    if (prop === "display" && ($this.is("audio") || $this.is("video"))) {
+                        $this.attr("controls", val === "none" ? null : "controls");
                     }
                     break;
                 case 1:
@@ -1664,7 +1768,6 @@ jQuery.extend( jQuery.easing,
             // context passed into the update() method. This is done because the
             // same timeline can be invoked with different variables that change
             // what each animation operates on.
-
             var id = this.animationID;
             if (!context.animData) context.animData = {};
 
@@ -1706,7 +1809,6 @@ jQuery.extend( jQuery.easing,
             // This function needs to get called just before the tween starts
             // to make sure we don't disable other tween animations that run
             // before this one.
-
             var tween = this;
             var tt = this.tweenType;
             var prop = this.property;
@@ -1863,36 +1965,61 @@ jQuery.extend( jQuery.easing,
 
 
 })(jQuery, AdobeEdge);
-
-/// Filename: edge.transform-tween.js
+/// Edge.transform-tween.js
 //
+// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 /***
  @name TransformTween
- @class Defines a tween that can separately animate the components of a CSS3 3d transform (later
- improvements are planned to support 2d transforms on browsers that don't support 3d). This defines a tween type of
- "transform' which permits the separate animation of the following transform properties:
+ @class Defines a tween that can separately animate the components of a CSS3 2d or 3d transform.
+ This defines a tween type of "transform' which permits the separate animation of the following transform properties:
  translateX, translateY, translateZ, rotateX, rotateY, rotateZ, skewX, skewY, scaleX, scaleY, and scaleZ.
  The individual component functions are combined in a single transform on each update, in the order just listed.
+ The basic idea is to write out the individual properties on a data object attached to the element using $.data, and
+ register a handler (UpdateFinalizer) which will be called by Timeline at the end of the update cycle. The UpdateFinalizer
+ will do the work of combining the individual values and applying the css.
  */
 
-(function(jQuery, Edge, PropertyTween){
+(function (jQuery, Edge, PropertyTween) {
     /*jshint strict:false */
     /*jshint curly:false */
 
     var $ = jQuery;
 
-    // Predeclarations
-    var UpdateFinalizer;
-    var Matrix4x4;
-
-    var asin = Math.asin;
-    var sin = Math.sin;
-    var cos = Math.cos;
-    var tan = Math.tan;
-    var atan2 = Math.atan2;
-
-    var deg2Rad =  Math.PI/180.0;
-    var rad2Deg = 180.0/Math.PI;
+    var UpdateFinalizer,
+        Matrix4x4,
+        asin = Math.asin,
+        sin = Math.sin,
+        cos = Math.cos,
+        tan = Math.tan,
+        atan2 = Math.atan2,
+        deg2Rad = Math.PI / 180.0,
+        rad2Deg = 180.0 / Math.PI;
 
     function TransformTween(tweenType, elements, property, val, opts) {
         Edge.PropertyTween.call(this, tweenType, elements, property, val, opts);
@@ -1900,56 +2027,55 @@ jQuery.extend( jQuery.easing,
 
     }
 
-    TransformTween.removeData = function(ele)
-    {
+    TransformTween.removeData = function (ele) {
         var data = $.data(ele, TransformTween.dataName);
-        if(data){
-            if ( data.timeline ) {
-                UpdateFinalizer.unRegister( data.timeline, data.id );
+        if (data) {
+            if (data.timeline) {
+                UpdateFinalizer.unRegister(data.timeline, data.id);
             }
             $(ele).removeData(ele, TransformTween.dataName);
         }
     };
 
-    var getNumber = function(numWithUnits)
-    {
+    var getNumber = function (numWithUnits) {
         var num = 0;
-        if (typeof numWithUnits === 'string')
-            num = parseFloat(numWithUnits.replace(/[a-zA-Z%]+$/,""));
-        else if(typeof numWithUnits === 'number')
+        if (typeof numWithUnits === 'string') {
+            num = parseFloat(numWithUnits.replace(/[a-zA-Z%]+$/, ""));
+        }
+        else if (typeof numWithUnits === 'number') {
             num = numWithUnits;
+        }
         return num;
     };
     TransformTween.getNumber = getNumber;
 
-    var splitUnits = function (s)
-    {
+    var splitUnits = function (s) {
         var o = {};
         o.num = parseFloat(s);
         o.units = String(s).match(/[a-zA-Z%]+$/);
         return o;
     };
-	TransformTween.splitUnits = splitUnits;
+    TransformTween.splitUnits = splitUnits;
 
-    var formatNumber = function(num)
-    {
-        if(num !== 0 && Math.abs(num) < 1e-6)
+    var formatNumber = function (num) {
+        if (num !== 0 && Math.abs(num) < 1e-6) {
             return num.toFixed(6);
+        }
         return num.toString();
     };
 
     function combineTranslation(parentDim, translate1, translate2) {
-        if(typeof translate1 === 'undefined') {
+        if (typeof translate1 === 'undefined') {
             return translate2;
         }
-        if(typeof translate2 === 'undefined') {
+        if (typeof translate2 === 'undefined') {
             return translate1;
         }
         var number1 = getNumber(translate1), number2 = getNumber(translate2);
-        if(!number1) {
+        if (!number1) {
             return translate2;
         }
-        if(!number2) {
+        if (!number2) {
             return translate1;
         }
 
@@ -1957,13 +2083,13 @@ jQuery.extend( jQuery.easing,
 
         var units = units1;
 
-        if( units1 !== units2) {
+        if (units1 !== units2) {
 
-            if(units1 === '%') {
+            if (units1 === '%') {
                 units = units2;
                 number1 = number1 / 100 * parentDim;
             }
-            if(units2 === '%') {
+            if (units2 === '%') {
                 number2 = number2 / 100 * parentDim;
             }
         }
@@ -1971,12 +2097,11 @@ jQuery.extend( jQuery.easing,
     }
 
     var htRedrawDivTimer = {};
-        
+
     function doCounterScale($ele, fScaleX, fScaleY) {
-        
         var iTimeout = 50;
         var fnDoTimeout;
-        
+
         fnDoTimeout = function () {
             var iMSNow = (new Date()).getMilliseconds(),
                 origW,
@@ -1988,7 +2113,7 @@ jQuery.extend( jQuery.easing,
             else {
                 //set transfrom origin to 0,0
                 $ele.css("-webkit-transform-origin", "0% 0%");
-                
+
                 trackSize = $ele.data("eg-track-size");
                 if (!trackSize) {
                     trackSize = {
@@ -1998,105 +2123,109 @@ jQuery.extend( jQuery.easing,
                         height: $ele.height()
                     };
                 }
-                
+
                 origW = $ele.width() / trackSize.scaleX;
                 origH = $ele.height() / trackSize.scaleY;
-                
+
                 $ele.css("width", origW * fScaleX);
                 $ele.css("height", origH * fScaleY);
-                
+
                 trackSize.scaleX = fScaleX;
                 trackSize.scaleY = fScaleY;
                 $ele.data("eg-track-size", trackSize);
-                
+
                 var data = $ele.data(TransformTween.dataName);
                 if (!data) {
                     // Get the current values on the element and save
                     data = TransformTween.buildTransformData($ele);
                     $ele.data(TransformTween.dataName, data);
                 }
-                
-                data.scaleX = 1.0/fScaleX;
-                data.scaleY = 1.0/fScaleY;
-                TransformTween.applyTransform( $ele, data, data.tween, {} );
+
+                data.scaleX = 1.0 / fScaleX;
+                data.scaleY = 1.0 / fScaleY;
+                TransformTween.applyTransform($ele, data, data.tween, {});
             }
         };
-        
-        if(!htRedrawDivTimer[$ele[0]]) {
+
+        if (!htRedrawDivTimer[$ele[0]]) {
             setTimeout(fnDoTimeout, iTimeout);
         }
         htRedrawDivTimer[$ele[0]] = (new Date()).getMilliseconds();
     }
-    
-    TransformTween.applyTransform = function( ele, data, tween, opts ) {
-        var $ele = $( ele );
 
-        if(typeof window.AdobeEdge.applyCount !== "undefined")
+    TransformTween.applyTransform = function (ele, data, tween, opts) {
+        var $ele = $(ele);
+
+        if (typeof window.AdobeEdge.applyCount !== "undefined") {
             window.AdobeEdge.applyCount++;
+        }
 
         var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
         var val, forceZ = true;
         var prop;
-        if ( opts ) {
+        if (opts) {
             forceZ = !opts.dontForceZ;
         }
 
-        var translateX = combineTranslation( 1, data.translateX, data.motionTranslateX);
-        var translateY = combineTranslation( 1, data.translateY, data.motionTranslateY);
-        var rotateZ = combineTranslation ( 1, data.rotateZ, data.motionRotateZ);
+        // Note that MotionTween uses a different property for its animation of translateX,
+        // translateY, and rotateZ, so they can be separately animated, and get combined here.
+        var translateX = combineTranslation(1, data.translateX, data.motionTranslateX);
+        var translateY = combineTranslation(1, data.translateY, data.motionTranslateY);
+        var rotateZ = combineTranslation(1, data.rotateZ, data.motionRotateZ);
 
         var supports3d = Edge.supported.cssTransform3d;
 
-        if ( isWebkit ) {
+        if (isWebkit) {
             // Z transforms make some Android browsers sick, so don't write out unless necessary
+            // and if the browser seems to support it
             val = "translate(" + translateX + "," + translateY + ")";
-            var num = getNumber( data.translateZ );
-            if ( (num !== 0 || forceZ) && supports3d ) {
+            var num = getNumber(data.translateZ);
+            if ((num !== 0 || forceZ) && supports3d) {
+                //$("#info").css("background-color", "yellow");
                 val += " translateZ(" + data.translateZ + ")";
             }
-            val += " rotate(" + rotateZ + ") "; // don't call it rotateZ - android gets ill
+            val += " rotate(" + rotateZ + ") "; // don't call it rotateZ - android 2.2 gets ill
 
-            if ( supports3d ) {
-                num = getNumber( data.rotateY );
-                if ( num !== 0 ) {
+            if (supports3d) {
+                num = getNumber(data.rotateY);
+                if (num !== 0) {
                     val += " rotateY(" + data.rotateY + ")";
                 }
 
-                num = getNumber( data.rotateX );
-                if ( num !== 0 ) {
+                num = getNumber(data.rotateX);
+                if (num !== 0) {
                     val += " rotateX(" + data.rotateX + ")";
                 }
             }
 
-            if ( data.skewX && data.skewX !== "0deg" ) {
+            if (data.skewX && data.skewX !== "0deg") {
                 val += " skewX(" + data.skewX + ") ";
             }
-            if ( data.skewY && data.skewY !== "0deg" ) {
+            if (data.skewY && data.skewY !== "0deg") {
                 val += " skewY(" + data.skewY + ") ";
             }
 
             val += " scale(" + data.scaleX + "," + data.scaleY + ") ";
 
-            num = getNumber( data.scaleZ );
-            if ( num !== 1 && supports3d ) {
+            num = getNumber(data.scaleZ);
+            if (num !== 1 && supports3d) {
                 val += " scaleZ(" + data.scaleZ + ")";
             }
-
 
             var ua = navigator.userAgent;
 
             // Don't do this in tool!
-            if(!window.edge_authoring_mode && supports3d)   {
+            if (!window.edge_authoring_mode && supports3d) {
                 $ele.css('-webkit-transform-style', 'preserve-3d');
             }
 
-            $ele.css( '-webkit-transform', val );
+            $ele.css('-webkit-transform', val);
 
-            if ( tween && tween.observers.length ) {
-                tween.notifyObservers( "onUpdate", { elapsed: 0, easingConst: 0, property: prop, value: val, element: $ele[0] } );
+            if (tween && tween.observers.length) {
+                tween.notifyObservers("onUpdate", { elapsed: 0, easingConst: 0, property: prop, value: val, element: $ele[0] });
             }
-            
-            if(!window.edge_authoring_mode) {
+
+            if (!window.edge_authoring_mode) {
                 if ((data.scaleX > 1 || data.scaleY > 1) && $ele.hasClass("eg-svg-holder")) {
                     $ele.children(".eg-svg-image.eg-counter-scale").each(function (i, eleChild) {
                         var $eleChild = $(eleChild);
@@ -2106,28 +2235,29 @@ jQuery.extend( jQuery.easing,
             }
 
         } else {
-            var rotateY = getNumber( data.rotateY ), rotateX = getNumber( data.rotateX );
-            var scaleX = data.scaleX * cos( deg2Rad * rotateY ), scaleY = data.scaleY * cos( deg2Rad * rotateX );
+            // This needs to be updated to support 3d for the browsers that now support it if the tool starts supporting 3d too
+            var rotateY = getNumber(data.rotateY), rotateX = getNumber(data.rotateX);
+            var scaleX = data.scaleX * cos(deg2Rad * rotateY), scaleY = data.scaleY * cos(deg2Rad * rotateX);
 
             val = "translate(" + translateX + "," + translateY + ")";
             val += " rotate(" + rotateZ + ")";
-            if ( data.skewX && data.skewX !== "0deg" ) {
+            if (data.skewX && data.skewX !== "0deg") {
                 val += " skewX(" + data.skewX + ") ";
             }
-            if ( data.skewY && data.skewY !== "0deg" ) {
+            if (data.skewY && data.skewY !== "0deg") {
                 val += " skewY(" + data.skewY + ") ";
             }
             val += " scale(" + scaleX + "," + scaleY + ")";
 
-            $ele.css( '-moz-transform', val );
+            $ele.css('-moz-transform', val);
 
-            $ele.css( '-o-transform', val );
+            $ele.css('-o-transform', val);
 
-            $ele.css( '-ms-transform', val );// This is here in case MS changes ie9 for bug 8346
+            $ele.css('-ms-transform', val);// This is here in case MS changes ie9 for bug 8346
 
-            $ele.css( 'msTransform', val ); // work around jquery bug #8346 - IE9 uses wrong camelcase
-            if ( tween && tween.observers.length ) {
-                tween.notifyObservers( "onUpdate", { elapsed: 0, easingConst: 0, property: prop, value: val, element: $ele[0] } );
+            $ele.css('msTransform', val); // work around jquery bug #8346 - IE9 uses wrong camelcase
+            if (tween && tween.observers.length) {
+                tween.notifyObservers("onUpdate", { elapsed: 0, easingConst: 0, property: prop, value: val, element: $ele[0] });
             }
         }
         $ele.css("transform", val);
@@ -2140,22 +2270,22 @@ jQuery.extend( jQuery.easing,
     $.extend(TransformTween.prototype, PropertyTween.prototype, {
 
         constructor: TransformTween,
-        
-        setup: function(timeline, context)
-        {
+
+        setup: function (timeline, context) {
             this.updateTriggered = false;
         },
         setValue: function (tt, prop, val) {
             var data = $.data(this, TransformTween.dataName);
             data[prop] = val;
         },
-        getValue:function (prop, tt) {
+        getValue: function (prop, tt) {
             var data = $.data(this, TransformTween.dataName);
         },
-        setupForAnimation: function(context) {
+        setupForAnimation: function (context) {
             var elements = this.getElementSet(context);
             var tween = this;
-            elements.each(function() {
+            elements.each(function () {
+                //var $this = $(this);
                 var data = $.data(this, TransformTween.dataName);
                 if (!data) {
                     // Get the current values on the element and save
@@ -2167,22 +2297,20 @@ jQuery.extend( jQuery.easing,
             PropertyTween.prototype.setupForAnimation.call(this, context);
 
         },
-        update: function(elapsed, easingConst, context)
-        {
+        update: function (elapsed, easingConst, context) {
             PropertyTween.prototype.update.call(this, elapsed, easingConst, context);
             var elements = this.getElementSet(context);
             var tween = this;
             var prop = this.property;
             var tt = this.tweenType;
-			
-            elements.each(function(){
+
+            elements.each(function () {
                 // We only want to tween if the property data has a
                 // matching animation id. If the ids don't match, that
                 // means another animation has started which is modifying
                 // this same property.
-
                 var td = tween.getPropertyTweenData(this, tt, prop);
-                if ( td.animationID !== tween.animationID ) {
+                if (td.animationID !== tween.animationID) {
                     return;
                 }
 
@@ -2192,10 +2320,10 @@ jQuery.extend( jQuery.easing,
                 UpdateFinalizer.Register(context.timeline, data.id, data);
             });
         },
-        buildTransformData: function(ele){
+        buildTransformData: function (ele) {
 
             var data = Edge.parseCanonicalTransform(ele);
-            if(data === null){
+            if (data === null) {
                 data = {};
                 var props = Edge.getTransformProps(ele);
                 data.translateX = "0px";
@@ -2212,9 +2340,10 @@ jQuery.extend( jQuery.easing,
                 data.skewYZ = 0;
                 data.skewX = '0deg';
                 data.skewY = '0deg';
-                if(data.matrix)
+                if (data.matrix) {
                     delete data.matrix;
-                if(props){
+                }
+                if (props) {
                     data.translateX = formatNumber(props.translation[0]) + 'px';
                     data.translateY = formatNumber(props.translation[1]) + 'px';
                     data.translateZ = formatNumber(props.translation[2]) + 'px';
@@ -2230,7 +2359,7 @@ jQuery.extend( jQuery.easing,
                     data.skewX = formatNumber(Math.atan(props.skew[0]) * rad2Deg) + 'deg';
                 }
             }
-            if ( data === null ) {
+            if (data === null) {
                 data = {};
             }
 
@@ -2240,7 +2369,7 @@ jQuery.extend( jQuery.easing,
 
             return data;
         },
-        buildDefaultTransformData: function( ele ) {
+        buildDefaultTransformData: function (ele) {
             var data = {};
             data.translateX = "0px";
             data.translateY = "0px";
@@ -2266,61 +2395,72 @@ jQuery.extend( jQuery.easing,
         // End of TransformTween extend
     });
 
-    var getTransform = function(ele)
-    {
+    // Most of the rest of this file is to support the use of transforms in css outside of Edge Animate
+    // To get it in canonical order, we grab the current transform and parse it. If it's in canonical order, we
+    // can use it like that. If not, or if it uses matrix, we decompose the matrix to get canonical transform order.
+    function getTransform(ele) {
         var isWebkit = ( 'webkitAppearance' in document.documentElement.style ),
             $ele = $(ele),
             style = $ele[0].style;
 
 
         var xform;
-        if(isWebkit) {
+        if (isWebkit) {
             xform = $ele.get(0).style.webkitTransform;
-            if(!xform)
+            if (!xform) {
                 xform = $ele.css("-webkit-transform");
+            }
         }
 
-        if(xform) {
+        if (xform) {
             return xform;
         }
 
         xform = $ele.get(0).style.msTransform;
-        if(!xform)
+        if (!xform) {
             xform = $ele.css("-ms-transform");
-        if(!xform)
+        }
+        if (!xform) {
             xform = $ele.css("msTransform");
-        if(!xform)
+        }
+        if (!xform) {
             xform = style.MozTransform;
-        if(!xform)
+        }
+        if (!xform) {
             xform = style["-moz-transform"];
-        if(!xform)
+        }
+        if (!xform) {
             xform = $ele.css("-moz-transform");
-        if(!xform)
+        }
+        if (!xform) {
             xform = style.oTransform;
-        if(!xform)
+        }
+        if (!xform) {
             xform = $ele.css("-o-transform");
-        if(!xform)
+        }
+        if (!xform) {
             xform = style.transform;
-        if(!xform)
+        }
+        if (!xform) {
             xform = $ele.css("transform");
+        }
 
         return xform || "";
-    };
+    }
 
-    var getTransformProps = function(ele, xformString)
-    {
+    function getTransformProps(ele, xformString) {
         var xform = typeof xformString === 'string' ? xformString : Edge.getTransform(ele);
 
         var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
 
         var m;
-        if(xform && xform !== 'none' && isWebkit){
+        if (xform && xform !== 'none' && isWebkit) {
 
             var cssM = new Edge.CSSMatrix();
             cssM.setMatrixValue(xform);
             m = Matrix4x4.fromCSSMatrix(cssM);
         }
-        else if(xform && xform !== 'none'){
+        else if (xform && xform !== 'none') {
 
             m = Matrix4x4.fromCSSMatrixString(xform);
         }
@@ -2329,19 +2469,19 @@ jQuery.extend( jQuery.easing,
             return undefined;
         }
         return Edge.decomposeTransform(m);
-    };
+    }
 
     var canonOrder = {
-        translate3d : 0,
-        translate : 0,
-        translateX : 0,
-        translateY : 0,
-        translateZ : 0,
-        rotate : 1,
-        rotateZ : 1,
-        rotateX : 1,
-        rotateY : 1,
-        rotate3d : 1,
+        translate3d: 0,
+        translate: 0,
+        translateX: 0,
+        translateY: 0,
+        translateZ: 0,
+        rotate: 1,
+        rotateZ: 1,
+        rotateX: 1,
+        rotateY: 1,
+        rotate3d: 1,
         skew: 2,
         skewX: 2,
         skewY: 2,
@@ -2352,15 +2492,16 @@ jQuery.extend( jQuery.easing,
         scaleZ: 3,
         perspective: 4
     };
-    var parseCanonicalTransform = function(ele, xformString)
-    {
+
+    function parseCanonicalTransform(ele, xformString) {
         var xform = typeof xformString === 'string' ? xformString : Edge.getTransform(ele);
 
         var re = /(\w+\s*\([^\)]*\))/g;
         var funcs = xform.match(re);
 
-        if( !funcs )
+        if (!funcs) {
             return null;
+        }
 
         var found = {};
         var hiWater = 0;
@@ -2381,118 +2522,123 @@ jQuery.extend( jQuery.easing,
         data.skewY = '0deg';
 
         var i;
-        for(i = 0; i < funcs.length; i++){
+        for (i = 0; i < funcs.length; i++) {
             var func = funcs[i].match(/\w+/);
-            if (found[func[0]] || canonOrder[func[0]] < hiWater){
+            if (found[func[0]] || canonOrder[func[0]] < hiWater) {
                 return null;
             }
             var params = funcs[i].match(/\([^\)]*\)/);
             params = params[0].replace(/[\(\)]/g, '');
             params = params.split(',');
             var angle;
-            switch(func[0])
-            {
-                case('matrix'):
-                    return null;
-                case('translate3d'):
-                    data.translateX = params[0];
-                    data.translateY = params.length > 1 ? params[1] : '0px';
-                    data.translateZ = params.length > 2 ? params[2] : '0px';
+            switch (func[0]) {
+            case('matrix'):
+                return null;
+            case('translate3d'):
+                data.translateX = params[0];
+                data.translateY = params.length > 1 ? params[1] : '0px';
+                data.translateZ = params.length > 2 ? params[2] : '0px';
 
-                    found.translate3d = found.translate = found.translateX = found.translateY = found.translateZ = true;
-                    break;
-                case('translate'):
-                    data.translateX = params[0];
-                    data.translateY = params.length > 1 ? params[1] : '0px';
+                found.translate3d = found.translate = found.translateX = found.translateY = found.translateZ = true;
+                break;
+            case('translate'):
+                data.translateX = params[0];
+                data.translateY = params.length > 1 ? params[1] : '0px';
 
-                    found.translate3d = found.translate = found.translateX = found.translateY = true;
-                    break;
-                case('translateX'):
-                    data.translateX = params[0];
+                found.translate3d = found.translate = found.translateX = found.translateY = true;
+                break;
+            case('translateX'):
+                data.translateX = params[0];
 
-                    found.translate3d = found.translate = found.translateX =  true;
-                    break;
-                case('translateY'):
-                    data.translateY = params[0];
+                found.translate3d = found.translate = found.translateX = true;
+                break;
+            case('translateY'):
+                data.translateY = params[0];
 
-                    found.translate3d = found.translate = found.translateY = true;
-                    break;
-                case('translateZ'):
-                    data.translateZ = params[0];
+                found.translate3d = found.translate = found.translateY = true;
+                break;
+            case('translateZ'):
+                data.translateZ = params[0];
 
-                    found.translate3d = found.translateZ = true;
-                    break;
-                case('rotate3d'):
-                    found.rotate3d = found.rotate = found.rotateX = found.rotateY = found.rotateZ = true;
-                    return null;
-                case('rotateX'):
-                    data.rotateX = params[0];
-                    found.rotate3d = found.rotateX = true;
-                    break;
-                case('rotateY'):
-                    data.rotateY = params[0];
-                    found.rotate3d = found.rotateY = true;
-                    break;
-                case('rotateZ'):
-                case('rotate'):
-                    data.rotateZ = params[0];
-                    found.rotate3d = found.rotate = found.rotateZ = true;
-                    break;
-                case('skew'):
-                    data.skewX = params[0];
-                    data.skewY = params.length > 1 ? params[1] : '0px';
-                    found.skew = found.skewX = found.skewY = true;
-                    break;
-                case('skewX'):
-                    data.skewX = params[0];
-                    found.skew = found.skewX  = true;
-                    break;
-                case('skewY'):
-                    data.skewY = params[0];
-                    found.skew = found.skewY = true;
-                    break;
-                case('scale3d'):
-                     // Note that according to spec y and z default to 1 in scale3d, but y defaults to the x value in scale!
-                    data.scaleX = params[0];
-                    data.scaleY = params.length > 1 ? params[1] : 1;
-                    data.scaleZ = params.length > 2 ? params[2] : 1;
+                found.translate3d = found.translateZ = true;
+                break;
+            case('rotate3d'):
+                found.rotate3d = found.rotate = found.rotateX = found.rotateY = found.rotateZ = true;
+                return null;
+            case('rotateX'):
+                data.rotateX = params[0];
+                found.rotate3d = found.rotateX = true;
+                break;
+            case('rotateY'):
+                data.rotateY = params[0];
+                found.rotate3d = found.rotateY = true;
+                break;
+            case('rotateZ'):
+            case('rotate'):
+                data.rotateZ = params[0];
+                found.rotate3d = found.rotate = found.rotateZ = true;
+                break;
+            case('skew'):
+                data.skewX = params[0];
+                data.skewY = params.length > 1 ? params[1] : '0px';
+                found.skew = found.skewX = found.skewY = true;
+                break;
+            case('skewX'):
+                data.skewX = params[0];
+                found.skew = found.skewX = true;
+                break;
+            case('skewY'):
+                data.skewY = params[0];
+                found.skew = found.skewY = true;
+                break;
+            case('scale3d'):
+                // Note that according to spec y and z default to 1 in scale3d, but y defaults to the x value in scale!
+                data.scaleX = params[0];
+                data.scaleY = params.length > 1 ? params[1] : 1;
+                data.scaleZ = params.length > 2 ? params[2] : 1;
 
-                    found.scale3d = found.scale = found.scaleX = found.scaleY = found.scaleZ = true;
-                    break;
-                case('scale'):
-                    data.scaleX = params[0];
-                    data.scaleY = params.length > 1 ? params[1] : params[0];
-                    found.scale = found.scaleX = found.scaleY = true;
-                    break;
-                case('scaleX'):
-                    data.scaleX = params[0];
-                    found.scale3d = found.scale = found.scaleX = true;
-                    break;
-                case('scaleY'):
-                    data.scaleY = params[0];
-                    found.scale3d = found.scale = found.scaleY = true;
-                    break;
-                case('scaleZ'):
-                    data.scaleZ = params[0];
-                    found.scale3d = found.scaleZ = true;
-                    break;
-                case('perspective'):
-                    found.perspective = true;
-                    break;
+                found.scale3d = found.scale = found.scaleX = found.scaleY = found.scaleZ = true;
+                break;
+            case('scale'):
+                data.scaleX = params[0];
+                data.scaleY = params.length > 1 ? params[1] : params[0];
+                found.scale = found.scaleX = found.scaleY = true;
+                break;
+            case('scaleX'):
+                data.scaleX = params[0];
+                found.scale3d = found.scale = found.scaleX = true;
+                break;
+            case('scaleY'):
+                data.scaleY = params[0];
+                found.scale3d = found.scale = found.scaleY = true;
+                break;
+            case('scaleZ'):
+                data.scaleZ = params[0];
+                found.scale3d = found.scaleZ = true;
+                break;
+            case('perspective'):
+                found.perspective = true;
+                break;
             }
         }
         return data;
     };
 
-    var forceGPU = function( ele ) {
-        var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
-        if (isWebkit) {
-            var transform = $(ele).css('-webkit-transform');
-            if (!transform.match("/translateZ/") && !transform.match("/matrix3d/")) {
-                $(ele).css('-webkit-transform', transform + ' translateZ(0)');
+    function forceGPU(ele) {
+
+        var isWebkit,
+            transform;
+
+        if (!window.edge_authoring_mode) {
+            isWebkit = ( 'webkitAppearance' in document.documentElement.style );
+            if (isWebkit) {
+                transform = $(ele).css('-webkit-transform');
+                if (!transform.match("/translateZ/") && !transform.match("/matrix3d/")) {
+                    $(ele).css('-webkit-transform', transform + ' translateZ(0)');
+                }
             }
         }
-    };
+    }
 
     Edge.getTransformProps = getTransformProps;
     Edge.getTransform = getTransform;
@@ -2507,14 +2653,14 @@ jQuery.extend( jQuery.easing,
 
      */
 
-    UpdateFinalizer = function(timeline){
+    UpdateFinalizer = function (timeline) {
         this.handlers = {};
         this.timeline = timeline;
     };
 
-    UpdateFinalizer.Register = function(timeline, id, handlerObject){
+    UpdateFinalizer.Register = function (timeline, id, handlerObject) {
         var finalizer = timeline.updateFinalizer;
-        if(typeof finalizer === 'undefined'){
+        if (typeof finalizer === 'undefined') {
             finalizer = new UpdateFinalizer(timeline);
             timeline.updateFinalizer = finalizer;
             timeline.addObserver(finalizer);
@@ -2522,45 +2668,46 @@ jQuery.extend( jQuery.easing,
         finalizer.handlers[id] = handlerObject;
     };
 
-    UpdateFinalizer.unRegister = function(timeline, id){		
+    UpdateFinalizer.unRegister = function (timeline, id) {
         var finalizer = timeline.updateFinalizer;
-        if(typeof finalizer !== 'undefined') {
+        if (typeof finalizer !== 'undefined') {
             delete finalizer.handlers[id];
-		}
+        }
     };
 
     $.extend(UpdateFinalizer.prototype, {
-        _finalizeUpdate : function(elapsed, context){
-            var data = {elapsed:elapsed, context:context};
+        _finalizeUpdate: function (elapsed, context) {
+            var data = {elapsed: elapsed, context: context};
             var methodName = "onFinalUpdate";
             var h;
-            for(h in this.handlers){
-                if(this.handlers.hasOwnProperty(h)){
+            for (h in this.handlers) {
+                if (this.handlers.hasOwnProperty(h)) {
                     var obj = this.handlers[h];
                     // Note that we call the handler function with 'this' set to the handler object
-                    if (obj[methodName])
+                    if (obj[methodName]) {
                         obj[methodName](data);
+                    }
                 }
             }
-			
-			this.handlers = {};
+
+            this.handlers = {};
         },
         // Called by timeline notifyObservers
-        postUpdate: function(tween, data){
+        postUpdate: function (tween, data) {
             this._finalizeUpdate(data.elapsed, data.context);
         },
         // Called by timeline notifyObservers
-        complete: function(data){
-            if(this.timeline) {
+        complete: function (data) {
+            if (this.timeline) {
                 this.timeline.removeObserver(this);
-			}
+            }
             this.timeline.updateFinalizer = undefined;
         },
-        _applyTransform : function(updateData){
+        _applyTransform: function (updateData) {
             // Note that this is called with 'this' set to the handler object
             var data = $.data(this.element, TransformTween.dataName);
-            if ( data && updateData ) {
-                TransformTween.applyTransform( this.element, data, data.tween, updateData.context );
+            if (data && updateData) {
+                TransformTween.applyTransform(this.element, data, data.tween, updateData.context);
             }
         }
 
@@ -2570,88 +2717,91 @@ jQuery.extend( jQuery.easing,
 
     /* Linear algebra stuff to support transform manipulation */
     /*global  WebKitCSSMatrix: false,  MozCSSMatrix: false, CSSMatrix : false */
-    if(typeof CSSMatrix === 'undefined'){
-        if(typeof WebKitCSSMatrix !== 'undefined')
+    if (typeof CSSMatrix === 'undefined') {
+        if (typeof WebKitCSSMatrix !== 'undefined') {
             Edge.CSSMatrix = WebKitCSSMatrix;
-        else if(typeof MozCSSMatrix !== 'undefined')
+        }
+        else if (typeof MozCSSMatrix !== 'undefined') {
             Edge.CSSMatrix = MozCSSMatrix;
+        }
+        // else
+        // alert("Can't find an object to use for CSSMatrix!")
     }
     else {
         Edge.CSSMatrix = CSSMatrix;
     }
 
-    var innerProd = function(a, b)
-    {
+    function innerProd(a, b) {
         var sum = 0;
         var len = a.length;
-        for(var i=0; i<len; i++){
+        for (var i = 0; i < len; i++) {
             sum += a[i] * b[i];
         }
         return sum;
-    };
-    var vector3Length = function(x, y, z)
-    {
+    }
+
+    function vector3Length(x, y, z) {
         return Math.sqrt(x * x + y * y + z * z);
 
-    };
-    var vectorNorm = function(v)
-    {
+    }
+
+    function vectorNorm(v) {
         var sum = 0;
         var len = v.length;
-        for(var i=0; i<len; i++){
+        for (var i = 0; i < len; i++) {
             sum += v[i] * v[i];
         }
         return Math.sqrt(sum);
-    };
-    var vectorNormalize = function(v)
-    {
+    }
+
+    function vectorNormalize(v) {
         var len = v.length;
         var norm = vectorNorm(v);
         var w = new Array(len);
-        if(norm === 0)
+        if (norm === 0) {
             norm = 1;
-        for(var i=0; i<len; i++){
-            w[i] = v[i]/norm;
+        }
+        for (var i = 0; i < len; i++) {
+            w[i] = v[i] / norm;
         }
         return w;
-    };
-    var combine = function(a, b, ascl, bscl)
-    {
+    }
+
+    function combine(a, b, ascl, bscl) {
         // see the CSS 2d Transform spec
         var result = new Array(3);
         result[0] = (ascl * a[0]) + (bscl * b[0]);
         result[1] = (ascl * a[1]) + (bscl * b[1]);
         result[2] = (ascl * a[2]) + (bscl * b[2]);
         return result;
-    };
+    }
 
-
-    var vector3Cross = function(a, b)
-    {
+    function vector3Cross(a, b) {
         // For 1-based, the formula is :
         //(a2b3 - a3b2, a3b1 - a1b3, a1b2 - a2b1)
         var result = new Array(3);
-        if(a.length !== 3 || b.length !== 3)
+        if (a.length !== 3 || b.length !== 3) {
             return null;
+        }
 
         result[0] = a[1] * b[2] - a[2] * b[1];
         result[1] = a[2] * b[0] - a[0] * b[2];
         result[2] = a[0] * b[1] - a[1] * b[0];
         return result;
-    };
+    }
 
-    Matrix4x4 = function(other){
+    var Matrix4x4 = function (other) {
         var i, j;
-        if(other){
-            for(i=0; i<4; i++){
+        if (other) {
+            for (i = 0; i < 4; i++) {
                 this[i] = new Array(4);
-                for(j=0; j<4; j++)
+                for (j = 0; j < 4; j++)
                     this[i][j] = other[i][j];
             }
         } else {
-            for(i=0; i<4; i++){
+            for (i = 0; i < 4; i++) {
                 this[i] = new Array(4);
-                for(j=0; j<4; j++)
+                for (j = 0; j < 4; j++)
                     this[i][j] = 0;
                 this[i][i] = 1;
             }
@@ -2659,8 +2809,7 @@ jQuery.extend( jQuery.easing,
         this.size = 4;
     };
 
-    Matrix4x4.fromCSSMatrix = function (m)
-    {
+    Matrix4x4.fromCSSMatrix = function (m) {
         var result = new Matrix4x4();
 
         result[0][0] = m.m11;
@@ -2683,30 +2832,30 @@ jQuery.extend( jQuery.easing,
     };
 
 
-
-    var angleToRadians = function(s)
-    {
+    function angleToRadians(s) {
         s = s.toLowerCase();
-        if(typeof s !== 'string')
+        if (typeof s !== 'string') {
             return 0;
+        }
         var o = splitUnits(s);
-        if(o.units === 'deg')
+        if (o.units === 'deg') {
             o.num *= deg2Rad;
+        }
         return o.num;
-    };
+    }
 
-    Matrix4x4.fromCSSMatrixString = function (s)
-    {
+    Matrix4x4.fromCSSMatrixString = function (s) {
         var result = new Matrix4x4();
 
         var re = /(\w+\s*\([^\)]*\))/g;
         var funcs = s.match(re);
 
-        if(typeof funcs === 'undefined' || funcs === null)
+        if (typeof funcs === 'undefined' || funcs === null) {
             return result;
+        }
 
         var i;
-        for(i = 0; i < funcs.length; i++){
+        for (i = 0; i < funcs.length; i++) {
             var func = funcs[i].match(/\w+/);
             var params = funcs[i].match(/\([^\)]*\)/);
             params = params[0].replace(/[\(\)]/g, '');
@@ -2714,105 +2863,104 @@ jQuery.extend( jQuery.easing,
             var angle;
             var x, y, z, d, sx, sy, sz, scale;
 
-            switch(func[0])
-            {
-                case('matrix'):
-                    var temp = new Matrix4x4();
-                    if(params.length === 6){
-                        temp[0][0] = parseFloat(params[0]);
-                        temp[0][1] = parseFloat(params[1]);
-                        temp[1][0] = parseFloat(params[2]);
-                        temp[1][1] = parseFloat(params[3]);
-                        temp[3][0] = parseFloat(params[4]);
-                        temp[3][1] = parseFloat(params[5]);
-                        result.preMultiplyBy(temp);
-                    }
-                    break;
-                case('translate3d'):
+            switch (func[0]) {
+            case('matrix'):
+                var temp = new Matrix4x4();
+                if (params.length === 6) {
+                    temp[0][0] = parseFloat(params[0]);
+                    temp[0][1] = parseFloat(params[1]);
+                    temp[1][0] = parseFloat(params[2]);
+                    temp[1][1] = parseFloat(params[3]);
+                    temp[3][0] = parseFloat(params[4]);
+                    temp[3][1] = parseFloat(params[5]);
+                    result.preMultiplyBy(temp);
+                }
+                break;
+            case('translate3d'):
+                x = splitUnits(params[0]).num;
+                y = params.length > 1 ? splitUnits(params[1]).num : 0;
+                z = params.length > 2 ? splitUnits(params[2]).num : 0;
+                result.translate3d(x, y, z);
+                break;
+            case('translate'):
+                x = splitUnits(params[0]).num;
+                y = params.length > 1 ? splitUnits(params[1]).num : 0;
+                result.translate3d(x, y, 0);
+                break;
+            case('translateX'):
+                d = splitUnits(params[0]).num;
+                result.translate3d(d, 0, 0);
+                break;
+            case('translateY'):
+                d = splitUnits(params[0]).num;
+                result.translate3d(0, d, 0);
+                break;
+            case('translateZ'):
+                d = splitUnits(params[0]).num;
+                result.translate3d(0, 0, d);
+                break;
+            case('rotate3d'):
+                if (params.length >= 3) {
                     x = splitUnits(params[0]).num;
-                    y = params.length > 1 ? splitUnits(params[1]).num : 0;
-                    z = params.length > 2 ? splitUnits(params[2]).num : 0;
-                    result.translate3d(x, y, z);
-                    break;
-                case('translate'):
-                    x = splitUnits(params[0]).num;
-                    y = params.length > 1 ? splitUnits(params[1]).num : 0;
-                    result.translate3d(x, y, 0);
-                    break;
-                case('translateX'):
-                    d = splitUnits(params[0]).num;
-                    result.translate3d(d, 0, 0);
-                    break;
-                case('translateY'):
-                    d = splitUnits(params[0]).num;
-                    result.translate3d(0, d, 0);
-                    break;
-                case('translateZ'):
-                    d = splitUnits(params[0]).num;
-                    result.translate3d(0, 0, d);
-                    break;
-                case('rotate3d'):
-                    if(params.length >= 3){
-                        x = splitUnits(params[0]).num;
-                        y = splitUnits(params[1]).num;
-                        z = splitUnits(params[2]).num;
-                        angle = angleToRadians(params[3]);
-                        result.rotate3d(x, y, z, angle, true);
-                    }
-                    break;
-                case('rotateX'):
-                    angle = angleToRadians(params[0]);
-                    result.rotateX(angle);
-                    break;
-                case('rotateY'):
-                    angle = angleToRadians(params[0]);
-                    result.rotateY(angle);
-                    break;
-                case('rotateZ'):
-                case('rotate'):
-                    angle = angleToRadians(params[0]);
-                    result.rotateZ(angle);
-                    break;
-                case('skew'):
-                    var angleX = angleToRadians(params[0]);
-                    var angleY = angleToRadians(params[1]);
-                    result.skew(angleX, angleY);
-                    break;
-                case('skewX'):
-                    angle = angleToRadians(params[0]);
-                    result.skew(angle, 0);
-                    break;
-                case('skewY'):
-                    angle = angleToRadians(params[0]);
-                    result.skew(0, angle);
-                    break;
-                case('scale3d'):
-                    sx = parseFloat(params[0]);
-                    sy = params.length > 1 ? parseFloat(params[1]) : 1;
-                    sz = params.length > 2 ? parseFloat(params[2]) : 1;
-                    result.scale(sx, sy, sz);
-                    break;
-                case('scale'):
-                    sx = parseFloat(params[0]);
-                    sy = params.length > 1 ? parseFloat(params[1]) : 1;
-                    result.scale(sx, sy, 1);
-                    break;
-                case('scaleX'):
-                    scale = parseFloat(params[0]);
-                    result.scale(scale, 1, 1);
-                    break;
-                case('scaleY'):
-                    scale = parseFloat(params[0]);
-                    result.scale(1, scale, 1);
-                    break;
-                case('scaleZ'):
-                    scale = parseFloat(params[0]);
-                    result.scale(1, 1, scale);
-                    break;
-                case('perspective'):
-                    d = parseFloat(params[0]);
-                    result.perspective(d);
-                    break;
+                    y = splitUnits(params[1]).num;
+                    z = splitUnits(params[2]).num;
+                    angle = angleToRadians(params[3]);
+                    result.rotate3d(x, y, z, angle, true);
+                }
+                break;
+            case('rotateX'):
+                angle = angleToRadians(params[0]);
+                result.rotateX(angle);
+                break;
+            case('rotateY'):
+                angle = angleToRadians(params[0]);
+                result.rotateY(angle);
+                break;
+            case('rotateZ'):
+            case('rotate'):
+                angle = angleToRadians(params[0]);
+                result.rotateZ(angle);
+                break;
+            case('skew'):
+                var angleX = angleToRadians(params[0]);
+                var angleY = angleToRadians(params[1]);
+                result.skew(angleX, angleY);
+                break;
+            case('skewX'):
+                angle = angleToRadians(params[0]);
+                result.skew(angle, 0);
+                break;
+            case('skewY'):
+                angle = angleToRadians(params[0]);
+                result.skew(0, angle);
+                break;
+            case('scale3d'):
+                sx = parseFloat(params[0]);
+                sy = params.length > 1 ? parseFloat(params[1]) : 1;
+                sz = params.length > 2 ? parseFloat(params[2]) : 1;
+                result.scale(sx, sy, sz);
+                break;
+            case('scale'):
+                sx = parseFloat(params[0]);
+                sy = params.length > 1 ? parseFloat(params[1]) : 1;
+                result.scale(sx, sy, 1);
+                break;
+            case('scaleX'):
+                scale = parseFloat(params[0]);
+                result.scale(scale, 1, 1);
+                break;
+            case('scaleY'):
+                scale = parseFloat(params[0]);
+                result.scale(1, scale, 1);
+                break;
+            case('scaleZ'):
+                scale = parseFloat(params[0]);
+                result.scale(1, 1, scale);
+                break;
+            case('perspective'):
+                d = parseFloat(params[0]);
+                result.perspective(d);
+                break;
             }
         }
 
@@ -2820,17 +2968,16 @@ jQuery.extend( jQuery.easing,
     };
 
     $.extend(Matrix4x4.prototype, {
-        identity : function()
-        {
-            for(var i=0; i<4; i++){
+        identity: function () {
+            for (var i = 0; i < 4; i++) {
                 this[i] = new Array(4);
-                for(var j=0; j<4; j++)
+                for (var j = 0; j < 4; j++)
                     this[i][j] = 0;
                 this[i][i] = 1;
             }
             return this;
         },
-        determinant : function(){
+        determinant: function () {
             var m00 = this[0][0];
             var m01 = this[0][1];
             var m02 = this[0][2];
@@ -2849,37 +2996,36 @@ jQuery.extend( jQuery.easing,
             var m33 = this[3][3];
 
 
-            // THis could be faster - we need to factor out some of the
+            // This could be faster - we need to factor out some of the
             // multiplies we do multiple times
 
-            var det = m03 * m12 * m21 * m30 - m02 * m13 * m21 * m30-
-                    m03 * m11 * m22 * m30+m01 * m13 * m22 * m30+
-                    m02 * m11 * m23 * m30-m01 * m12 * m23 * m30-
-                    m03 * m12 * m20 * m31+m02 * m13 * m20 * m31+
-                    m03 * m10 * m22 * m31-m00 * m13 * m22 * m31-
-                    m02 * m10 * m23 * m31+m00 * m12 * m23 * m31+
-                    m03 * m11 * m20 * m32-m01 * m13 * m20 * m32-
-                    m03 * m10 * m21 * m32+m00 * m13 * m21 * m32+
-                    m01 * m10 * m23 * m32-m00 * m11 * m23 * m32-
-                    m02 * m11 * m20 * m33+m01 * m12 * m20 * m33+
-                    m02 * m10 * m21 * m33-m00 * m12 * m21 * m33-
-                    m01 * m10 * m22 * m33+m00 * m11 * m22 * m33;
+            var det = m03 * m12 * m21 * m30 - m02 * m13 * m21 * m30 -
+                m03 * m11 * m22 * m30 + m01 * m13 * m22 * m30 +
+                m02 * m11 * m23 * m30 - m01 * m12 * m23 * m30 -
+                m03 * m12 * m20 * m31 + m02 * m13 * m20 * m31 +
+                m03 * m10 * m22 * m31 - m00 * m13 * m22 * m31 -
+                m02 * m10 * m23 * m31 + m00 * m12 * m23 * m31 +
+                m03 * m11 * m20 * m32 - m01 * m13 * m20 * m32 -
+                m03 * m10 * m21 * m32 + m00 * m13 * m21 * m32 +
+                m01 * m10 * m23 * m32 - m00 * m11 * m23 * m32 -
+                m02 * m11 * m20 * m33 + m01 * m12 * m20 * m33 +
+                m02 * m10 * m21 * m33 - m00 * m12 * m21 * m33 -
+                m01 * m10 * m22 * m33 + m00 * m11 * m22 * m33;
             return det;
         },
-
-        normalizeTransform: function() // Normalize in place
-        {
+        // Normalize in place
+        normalizeTransform: function () {
             // Normalize the matrix.
-            if (this[3][3] === 0)
+            if (this[3][3] === 0) {
                 return false;
+            }
 
             for (var i = 0; i < 4; i++)
                 for (var j = 0; j < 4; j++)
                     this[i][j] /= this[3][3];
             return true;
         },
-        transpose: function()
-        {
+        transpose: function () {
             var m = new Matrix4x4();
 
             for (var i = 0; i < 4; i++)
@@ -2887,9 +3033,22 @@ jQuery.extend( jQuery.easing,
                     m[i][j] = this[j][i];
             return m;
         },
-        
-        toCSSMatrix: function()
-        {
+        /* Not used for now comment out to save space
+         rightMultiply: function(rowVector)
+         {
+         // This does a pure matrix multiply, Not a transform with perspective
+         var v = new Array( 4 );
+
+         for ( var i = 0; i < 4; i++ ) {
+         v[i] = 0;
+         for ( var j = 0; j < 4; j++ )
+         v[i] += rowVector[j] * this[j][i];
+         }
+         return v;
+         },
+         */
+
+        toCSSMatrix: function () {
             var m = new Edge.CSSMatrix();
 
             m.m11 = this[0][0];
@@ -2911,8 +3070,7 @@ jQuery.extend( jQuery.easing,
             return m;
         },
 
-        _inverse : function()
-        {
+        _inverse: function () {
             // Unimplemented by default
             return this;
         },
@@ -2921,11 +3079,8 @@ jQuery.extend( jQuery.easing,
         // However the only time we call this function is if there is perspective defined.
         // We can only get perspective if 3d transforms are supported, and all browsers (so far)
         // that support 3d also supply a CSSMatrix with inverse() defined.
-        inverse: function()
-        {
-            //var testOurInverse = _inverse(); // dead code?
-
-            if(Edge.CSSMatrix !== undefined){
+        inverse: function () {
+            if (Edge.CSSMatrix !== undefined) {
                 var m = this.toCSSMatrix();
                 var result = m.inverse();
                 return Matrix4x4.fromCSSMatrix(result);
@@ -2934,10 +3089,11 @@ jQuery.extend( jQuery.easing,
         },
 
 
-        rotate3d : function (x, y, z, angle, angleIsRadians){
+        rotate3d: function (x, y, z, angle, angleIsRadians) {
             var rotate = new Edge.Matrix4x4();
-            if(!angleIsRadians)
+            if (!angleIsRadians) {
                 angle *= deg2Rad;
+            }
 
             if (angle) {
                 var s;
@@ -2960,17 +3116,17 @@ jQuery.extend( jQuery.easing,
                      0, 0, 0, 1) (this is in column-major order )
                      */
 
-                    rotate[0][0] = 1 + (1-c)*(x*x-1);
-                    rotate[1][0] = -z*s+(1-c)*x*y;
-                    rotate[2][0] = y*s+(1-c)*x*z;
+                    rotate[0][0] = 1 + (1 - c) * (x * x - 1);
+                    rotate[1][0] = -z * s + (1 - c) * x * y;
+                    rotate[2][0] = y * s + (1 - c) * x * z;
                     rotate[3][0] = 0;
-                    rotate[0][1] = z*s+(1-c)*x*y;
-                    rotate[1][1] = 1 + (1-c)*(y*y-1);
-                    rotate[2][1] = -x*s+(1-c)*y*z;
+                    rotate[0][1] = z * s + (1 - c) * x * y;
+                    rotate[1][1] = 1 + (1 - c) * (y * y - 1);
+                    rotate[2][1] = -x * s + (1 - c) * y * z;
                     rotate[3][1] = 0;
-                    rotate[0][2] = -y*s+(1-c)*x*z;
-                    rotate[1][2] = x*s+(1-c)*y*z;
-                    rotate[2][2] = 1 + (1-c)*(z*z-1);
+                    rotate[0][2] = -y * s + (1 - c) * x * z;
+                    rotate[1][2] = x * s + (1 - c) * y * z;
+                    rotate[2][2] = 1 + (1 - c) * (z * z - 1);
                     rotate[3][2] = 0;
                     rotate[0][3] = 0;
                     rotate[1][3] = 0;
@@ -2982,29 +3138,25 @@ jQuery.extend( jQuery.easing,
             return this.preMultiplyBy(rotate);
         },
 
-        rotateX : function (degreesF)
-        {
+        rotateX: function (degreesF) {
             return this.rotate3d(1, 0, 0, degreesF);
         },
 
-        rotateY : function(degreesF)
-        {
+        rotateY: function (degreesF) {
             return this.rotate3d(0, 1, 0, degreesF);
         },
 
-        rotateZ : function(degreesF)
-        {
+        rotateZ: function (degreesF) {
             return this.rotate3d(0, 0, 1, degreesF);
         },
 
-        translate3d : function(x, y, z)
-        {
-            var translate  = new Edge.Matrix4x4();
-			
+        translate3d: function (x, y, z) {
+            var translate = new Edge.Matrix4x4();
+
             translate[3][0] += x;
             translate[3][1] += y;
             translate[3][2] += z;
-			
+
             return this.preMultiplyBy(translate);
         },
         /*
@@ -3014,11 +3166,8 @@ jQuery.extend( jQuery.easing,
          --! @param scaleY (number) the vertical scale
          --! @return (table) self
          */
-
-        scale: function(scaleX, scaleY, scaleZ)
-        {
-            if ( (scaleX !== 1.0) || (scaleY !== 1.0)  || (scaleZ !== 1.0) )
-            {
+        scale: function (scaleX, scaleY, scaleZ) {
+            if ((scaleX !== 1.0) || (scaleY !== 1.0) || (scaleZ !== 1.0)) {
                 var scale = new Edge.Matrix4x4();
 
                 scale[0][0] = scaleX;
@@ -3030,18 +3179,17 @@ jQuery.extend( jQuery.easing,
             return this;
         },
 
-        skew: function(angleX, angleY, angleIsRadians)
-        {
-            if(!angleIsRadians){
+        skew: function (angleX, angleY, angleIsRadians) {
+            if (!angleIsRadians) {
                 angleX *= deg2Rad;
                 angleY *= deg2Rad;
             }
-            if(angleX !== 0){
+            if (angleX !== 0) {
                 var skewX = new Edge.Matrix4x4();
                 skewX[1][0] = tan(angleX);
                 this.preMultiplyBy(skewX);
             }
-            if(angleY !== 0){
+            if (angleY !== 0) {
                 var skewY = new Edge.Matrix4x4();
                 skewY[0][1] = tan(angleY);
                 this.preMultiplyBy(skewY);
@@ -3049,12 +3197,11 @@ jQuery.extend( jQuery.easing,
             return this;
         },
 
-        perspective: function(d)
-        {
+        perspective: function (d) {
 
-            if(d !== 0){
+            if (d !== 0) {
                 var persp = new Edge.Matrix4x4();
-                persp[2][3] = 1/d;
+                persp[2][3] = 1 / d;
                 this.preMultiplyBy(persp);
 
             }
@@ -3066,9 +3213,7 @@ jQuery.extend( jQuery.easing,
          --! @param skew - skew factors XY,XZ,YZ
          --! @return (table) self
          */
-
-        skewByFactors : function(skewXY,skewXZ,skewYZ)
-        {
+        skewByFactors: function (skewXY, skewXZ, skewYZ) {
             var temp = new Edge.Matrix4x4();
 
             temp[2][1] = skewYZ;
@@ -3085,8 +3230,7 @@ jQuery.extend( jQuery.easing,
             return this;
         },
 
-        applyPerspective: function (perspX, perspY, perspZ, perspW)
-        {
+        applyPerspective: function (perspX, perspY, perspZ, perspW) {
             var temp = new Edge.Matrix4x4();
 
             temp[0][3] = perspX;
@@ -3099,42 +3243,42 @@ jQuery.extend( jQuery.easing,
             return this;
         },
 
-        preMultiplyBy : function (other){
+        preMultiplyBy: function (other) {
             // We do it inline with locals to save loops and lookups
             // Tedious but faster execution
-            var a00=other[0][0];
-            var a01=other[0][1];
-            var a02=other[0][2];
-            var a03=other[0][3];
-            var a10=other[1][0];
-            var a11=other[1][1];
-            var a12=other[1][2];
-            var a13=other[1][3];
-            var a20=other[2][0];
-            var a21=other[2][1];
-            var a22=other[2][2];
-            var a23=other[2][3];
-            var a30=other[3][0];
-            var a31=other[3][1];
-            var a32=other[3][2];
-            var a33=other[3][3];
+            var a00 = other[0][0];
+            var a01 = other[0][1];
+            var a02 = other[0][2];
+            var a03 = other[0][3];
+            var a10 = other[1][0];
+            var a11 = other[1][1];
+            var a12 = other[1][2];
+            var a13 = other[1][3];
+            var a20 = other[2][0];
+            var a21 = other[2][1];
+            var a22 = other[2][2];
+            var a23 = other[2][3];
+            var a30 = other[3][0];
+            var a31 = other[3][1];
+            var a32 = other[3][2];
+            var a33 = other[3][3];
 
-            var b00=this[0][0];
-            var b01=this[0][1];
-            var b02=this[0][2];
-            var b03=this[0][3];
-            var b10=this[1][0];
-            var b11=this[1][1];
-            var b12=this[1][2];
-            var b13=this[1][3];
-            var b20=this[2][0];
-            var b21=this[2][1];
-            var b22=this[2][2];
-            var b23=this[2][3];
-            var b30=this[3][0];
-            var b31=this[3][1];
-            var b32=this[3][2];
-            var b33=this[3][3];
+            var b00 = this[0][0];
+            var b01 = this[0][1];
+            var b02 = this[0][2];
+            var b03 = this[0][3];
+            var b10 = this[1][0];
+            var b11 = this[1][1];
+            var b12 = this[1][2];
+            var b13 = this[1][3];
+            var b20 = this[2][0];
+            var b21 = this[2][1];
+            var b22 = this[2][2];
+            var b23 = this[2][3];
+            var b30 = this[3][0];
+            var b31 = this[3][1];
+            var b32 = this[3][2];
+            var b33 = this[3][3];
 
             this[0][0] = a00 * b00 + a01 * b10 + a02 * b20 + a03 * b30;
             this[0][1] = a00 * b01 + a01 * b11 + a02 * b21 + a03 * b31;
@@ -3163,14 +3307,14 @@ jQuery.extend( jQuery.easing,
     Edge.Matrix4x4 = Matrix4x4;
 
 
-    Edge.decomposeTransform = function(inMatrix)
-    {
+    Edge.decomposeTransform = function (inMatrix) {
         // fields will be : translation, rotation, scale, skew, perspective
         var returnValue;
         var mtrx = new Matrix4x4(inMatrix);
 
-        if(!mtrx.normalizeTransform())
+        if (!mtrx.normalizeTransform()) {
             return null;
+        }
 
         // perspectiveMatrix is used to solve for perspective, but it also provides
         // an easy way to test for singularity of the upper 3x3 component.
@@ -3182,7 +3326,7 @@ jQuery.extend( jQuery.easing,
 
         perspectiveMatrix[3][3] = 1;
 
-        if (perspectiveMatrix.determinant(perspectiveMatrix) === 0){
+        if (perspectiveMatrix.determinant(perspectiveMatrix) === 0) {
             if (window.edge_authoring_mode) {
                 window.alert("Bad perspective matrix");
             }
@@ -3202,8 +3346,9 @@ jQuery.extend( jQuery.easing,
             // Solve the equation by inverting perspectiveMatrix and multiplying
             // rightHandSide by the inverse.
             var inversePerspectiveMatrix = perspectiveMatrix.inverse();
-            if(!inversePerspectiveMatrix)
-                return false; // shouldn't happen because we already checked determinant
+            if (!inversePerspectiveMatrix) {
+                return false;
+            } // shouldn't happen because we already checked determinant
 
             var transposedInversePerspectiveMatrix = inversePerspectiveMatrix.transpose();
             perspective = transposedInversePerspectiveMatrix.rightMultiply(rightHandSide);
@@ -3213,7 +3358,7 @@ jQuery.extend( jQuery.easing,
             mtrx[3][3] = 1;
         }
 
-        else{
+        else {
             // No perspective.
             perspective[0] = perspective[1] = perspective[2] = 0;
             perspective[3] = 1;
@@ -3234,7 +3379,7 @@ jQuery.extend( jQuery.easing,
         row[1] = new Array(3);
         row[2] = new Array(3);
 
-        for (var j = 0; j < 3; j++){
+        for (var j = 0; j < 3; j++) {
             row[j][0] = mtrx[j][0];
             row[j][1] = mtrx[j][1];
             row[j][2] = mtrx[j][2];
@@ -3254,7 +3399,7 @@ jQuery.extend( jQuery.easing,
         // Now, compute Y scale and normalize 2nd row.
         scale[1] = vectorNorm(row[1]);
         row[1] = vectorNormalize(row[1]);
-        if(scale[1] !== 0){
+        if (scale[1] !== 0) {
             skew[0] /= scale[1];
         }
 
@@ -3265,21 +3410,21 @@ jQuery.extend( jQuery.easing,
         skew[2] = innerProd(row[1], row[2]);
         row[2] = combine(row[2], row[1], 1.0, -skew[2]);
 
-        // Next][ get Z scale and normalize 3rd row.
+        // Next get Z scale and normalize 3rd row.
         scale[2] = vectorNorm(row[2]);
-        if(scale[2] !== 0) {
+        if (scale[2] !== 0) {
             row[2] = vectorNormalize(row[2]);
         }
-        if(scale[2] !== 0){
+        if (scale[2] !== 0) {
             skew[1] /= scale[2];
             skew[2] /= scale[2];
         }
 
-        // At this point][ the matrix [in rows] is orthonormal.
+        // At this point the matrix [in rows] is orthonormal.
         // Check for a coordinate system flip.  If the determinant
-        // is -1][ then negate the matrix and the scaling factors.
+        // is -1 then negate the matrix and the scaling factors.
         var pdum3 = vector3Cross(row[1], row[2]);
-        if (innerProd(row[0], pdum3) < 0){
+        if (innerProd(row[0], pdum3) < 0) {
 
             for (var k = 0; k < 3; k++) {
                 scale[k] *= -1; // THIS IS WRONG IN THE SPEC! See the original gem for their correct version
@@ -3289,28 +3434,57 @@ jQuery.extend( jQuery.easing,
                 row[k][2] *= -1;
             }
         }
-        // Now, get the rotations ou
+        // Now, get the rotations out
         var rotation = new Array(3);
         rotation[1] = asin(-row[0][2]);
-        if (cos(rotation[1]) !== 0){
+        if (cos(rotation[1]) !== 0) {
             rotation[0] = atan2(row[1][2], row[2][2]);
             rotation[2] = atan2(row[0][1], row[0][0]);
         }
-        else{
+        else {
             rotation[0] = atan2(-row[2][0], row[1][1]);
             rotation[2] = 0;
         }
 
-        returnValue = {translation:translation, rotation:rotation, scale:scale, skew:skew, perspective: perspective};
+        returnValue = {translation: translation, rotation: rotation, scale: scale, skew: skew, perspective: perspective};
         return returnValue;
     };
 
+    // end decomposeTransform support
 
-    Edge.Timeline.addTweenType("transform", function(ele, prop, val, opts){ return new TransformTween("transform", ele, prop, val, opts); });
+    Edge.Timeline.addTweenType("transform", function (ele, prop, val, opts) {
+        return new TransformTween("transform", ele, prop, val, opts);
+    });
 
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween);
-
-/// Filename: edge.color-tween.js
+/// edge.color-tween.js
+//
+// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 /***
  @name ColorTween
@@ -3770,8 +3944,34 @@ jQuery.extend( jQuery.easing,
     Edge.Timeline.addTweenType("color", function(ele, prop, val, opts){ return new ColorTween("color", ele, prop, val, opts); });
 
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween);
-
-/// Filename: edge.subproperty-tween.js
+/// edge.subproperty-tween.js
+//
+// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 /***
  @name SubpropertyTween
@@ -3957,7 +4157,7 @@ jQuery.extend( jQuery.easing,
         return returnValue;
     };
 
-    var getSubProps = function (ele, prop) {
+    Edge.getSubProps = function (ele, prop) {
         var $ele = $(ele);
         var style, i;
         for (i in propTemplates[prop]) {
@@ -3971,21 +4171,18 @@ jQuery.extend( jQuery.easing,
 
         return [];
     };
-    Edge.getSubProps = getSubProps;
 
-    var getSubType = function (s) {
+    SubpropertyTween.getSubType = function (s) {
         if (subpropLookup[s] !== null) {
             return subpropLookup[s].type;
         }
     };
-    SubpropertyTween.getSubType = getSubType;
 
-    var getStyle = function (s) {
+    SubpropertyTween.getStyle = function (s) {
         if (subpropLookup[s] !== null) {
             return subpropLookup[s].cssProp;
         }
     };
-    SubpropertyTween.getStyle = getStyle;
 
     SubpropertyTween.applySubproperty = function (ele, data, tween, opts) {
         var $ele = $(ele);
@@ -4046,8 +4243,35 @@ jQuery.extend( jQuery.easing,
     Edge.Timeline.addTweenType("subproperty", function (ele, prop, val, opts) { return new SubpropertyTween("subproperty", ele, prop, val, opts); });
 
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween, AdobeEdge.ColorTween);
+/// edge.gradient-tween.js
+//
+// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
-// Filename: edge.gradient-tween.js
 /***
  @name GradientTween
  @class Defines a tween that can animate the background-image gradients.
@@ -4096,8 +4320,7 @@ jQuery.extend( jQuery.easing,
             PropertyTween.prototype.setupForAnimation.call(this, context);
         },
         getValue: function (prop, tt) {
-            var fv = $(this).css(prop);
-            return fv;
+            return $(this).css(prop);
         },
         setValuePre: function (tt, prop, val) {
             $(this).css(prop, '-webkit-' + val);
@@ -4232,7 +4455,7 @@ jQuery.extend( jQuery.easing,
                 return;
 
             var values = [];
-            if (gradientValueObj.angle)
+            if (gradientValueObj.angle !== null)
                 values = values.concat(gradientValueObj.angle);
             else if (gradientValueObj.centerPoint) {
                 values = values.concat(gradientValueObj.centerPoint);
@@ -4302,12 +4525,48 @@ jQuery.extend( jQuery.easing,
     Edge.Timeline.addTweenType("gradient", function(ele, prop, val, opts){ return new GradientTween("gradient", ele, prop, val, opts); });
 
 })(jQuery, AdobeEdge, AdobeEdge.PropertyTween);
+/// Edge.motion-tween.js
+//
+// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
-/// Filename: edge.motion-tween.js
 /***
     @name MotionTween
     @class Defines a tween that can animate an object along a path described by a cubic spline
-    Currently only supports top, left of ap'd elements
+    The spline is represented in Hermite form (this is mathematically equivalent to Bezier).
+    Easing is applied to the time before converting it to a length value. We precompute most every thing
+    so we can do linear interpolation when doing the actual animation. This is also necessary because
+    we need the curve length to figure out the easing-value-to-length calculation, and curve length of a
+    cubic parametric curve can't be done in closed form, so we have to integrate numerically.
+    Note that this tween supports time-to-length keyframes, which are independent of the curve anchors and
+    control points. These are currently not supported in Edge Animate tool. They are represented in
+    Bezier form.
+    So the overall data conversion is:
+    overall easing value->curve easing value (from keyframes)->length->segment + bezier parameter (b)->x and y
  */
 
 (function($, Edge){
@@ -4336,8 +4595,6 @@ jQuery.extend( jQuery.easing,
                     if (cache[kc] !== v) {
                         cache[kc] = v;
                         $.data(this, 'css_cache', cache);
-                        // if property is width or height or something that can affect width or height, dirty width or height
-
                         // update the units used for width/height
                         if (k === "width") {
                             $.data(this, "u_w", (splitUnits(v)).units);
@@ -4404,7 +4661,7 @@ jQuery.extend( jQuery.easing,
 
     function MotionTween(tweenType, elements, path, keyframes, opts) {
         TransformTween.call(this, tweenType, elements, 'motion', undefined, opts);
-        
+
         this.name = "motionTween";
         this.path = path;
         if(path && path.length > 1 && path[0].length < 6){
@@ -4461,7 +4718,6 @@ jQuery.extend( jQuery.easing,
     function derivative(s0, s1, b) {
 
         // see http://en.wikipedia.org/wiki/Hermite_curve
-        // LUA: s = { t, x, y, udx/dt, udy/dt, lowerdx, lowerdy, l }
         // s = { x, y, upperdx/db, upperdy/db, lowerdx/db, lowerdy/db, l }
         var o = {};
 
@@ -4516,6 +4772,7 @@ jQuery.extend( jQuery.easing,
 
     function createEasingTable(points) {
         // convert points of a curve in (0,0)-(1,1) to be a lookup table from t to easing value
+        // t can be a pre-eased value - it takes values in [0, 1]
         var minStep = 1;
         var i;
         for( i = 0; i < points.length - 1; i++ ) {
@@ -4695,18 +4952,21 @@ jQuery.extend( jQuery.easing,
                 oOrigin.x = parseFloat(aOrigin[0].substring(0, aOrigin[0].length - 2));
                 oOrigin.y = parseFloat(aOrigin[1].substring(0, aOrigin[1].length - 2));
             }
+            
+            //originIncludesBorders does not appear to be accurate in the tool - see the comment in edge.js originIncludesBorders
+            if (!Edge.supported.originIncludesBorders && !window.edge_authoring_mode) {
+                if (w > 0 && h > 0) {
+                    originXp = originXp || oOrigin.x / w;
+                    originYp = originYp || oOrigin.y / h;
 
-            if (!Edge.supported.originIncludesBorders) {
-                originXp = originXp || oOrigin.x / w;
-                originYp = originYp || oOrigin.y / h;
-
-                //adjust for border
-                bdlW = splitUnits(ele$.css("border-left-width")).num + splitUnits(ele$.css("border-right-width")).num || 0;
-                bdlW = bdlW * originXp;
-                bdtW = splitUnits(ele$.css("border-top-width")).num + splitUnits(ele$.css("border-bottom-width")).num || 0;
-                bdtW = bdtW * originYp;
-                oOrigin.x += bdlW;
-                oOrigin.y += bdtW;
+                    //adjust for border
+                    bdlW = splitUnits(ele$.css("border-left-width")).num + splitUnits(ele$.css("border-right-width")).num || 0;
+                    bdlW = bdlW * originXp;
+                    bdtW = splitUnits(ele$.css("border-top-width")).num + splitUnits(ele$.css("border-bottom-width")).num || 0;
+                    bdtW = bdtW * originYp;
+                    oOrigin.x += bdlW;
+                    oOrigin.y += bdtW;
+                }
             }
 
             return oOrigin;
@@ -4734,14 +4994,18 @@ jQuery.extend( jQuery.easing,
 
             b = b - seg;
             b = Math.min(1.0, Math.max(0, b));
+            // We use deltaB to figure out derivative for auto-orient. Stay away
+            // From 0 and 1 because the derivatives are often 0 there and we really want the limit,
+            // not atan2(0,0)
             deltaB = Math.max(0.000001, Math.min(0.999999, b));
 
-            var o = cubic(path[seg], path[seg + 1], b),
+            var o = cubic(path[seg], path[seg + 1], b), // This is what we set all that stuff up for - do the cubic computation!
                 deltaXY = derivative(path[seg], path[seg + 1], deltaB),
                 rotation1 = Math.atan2(deltaXY.dx, deltaXY.dy) * 180 / Math.PI,
                 rotation,
                 skipRotation;
-            
+
+            // Compute the auto-orient angle
             if (this._prevObj && path.length === 2 && path[0][0] === path[1][0] && path[0][1] === path[1][1]) {
                 skipRotation = true;
                 rotation = 0;//we don't know what it really is, this path shouldn't change it
@@ -4789,6 +5053,7 @@ jQuery.extend( jQuery.easing,
                     uY = $.data(this, "u_y") || "px",
                     deltaX = /*$.data(this, "deltaX") ||*/ 0,
                     deltaY = /*$.data(this, "deltaY") ||*/ 0,
+                    //pushToTranslate = !window.edge_authoring_mode || !$.data(this, "domDef"),
                     pushToTranslate = !window.edge_authoring_mode,
                     doAutoRotate = $.data(this, "doAutoOrient");
 
@@ -4824,12 +5089,13 @@ jQuery.extend( jQuery.easing,
                     if (!doAutoRotate) {
                         rotation = 0;
                     }
-                    rotation = Math.round(rotation, 5);
+                    rotation = Math.abs(rotation) > .01 ? rotation: 0; // Handle tiny numbers that might go to exp notation
+
                     $.data(this, "motionRotateZ", rotation + "deg");
                     tween.setValue.call(this, undefined, "motionRotateZ", rotation + "deg");
                     UpdateFinalizer.Register(context.timeline, data.id, data);
                 }
-                
+
                 if (!pushToTranslate) {
                     $(this).css(propX, valX + uX);
                     tween.notifyObservers("onUpdate", { elapsed: elapsed, easingConst: easingConst, property: propX, value: valX + uX, element: data.tween });
@@ -4838,7 +5104,6 @@ jQuery.extend( jQuery.easing,
                 } else {
                     tween.setValue.call(this, undefined, "motionTranslateX", valX + "px");
                     tween.setValue.call(this, undefined, "motionTranslateY", valY + "px");
-                    
                     UpdateFinalizer.Register(context.timeline, data.id, data);
                 }
             });
@@ -4900,7 +5165,7 @@ jQuery.extend( jQuery.easing,
             var i, j;
 
             for ( i = 0; i < curve.length - 1; i++ ) {
-                for (  j = 0; j < 5; j++ ) {
+                for (  j = 0; j < 5; j++ ) { // TODO this loop could be more efficient
                     if ( j < 4 || i === curve.length - 2 )  {
                         var b = j / 4;
                         var o = { b:i + b };
@@ -4947,70 +5212,236 @@ jQuery.extend( jQuery.easing,
     Edge.MotionTween = MotionTween;
 
 })(jQuery, AdobeEdge);
+// edge.symbol.js
+//
+// Copyright (c) 2010-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
 
-// Filename: edge.symbol.js
-
-(function( $, Edge ) {
+(function ($, Edge) {
     /*jshint strict:false */
-     /*jshint curly:false */
+    /*jshint curly:false */
 
     var triggerDict = Edge.triggerDict = {
         // These are intended to be called with 'this' being a symbol
-        "element": function( actionFunc, selector, triggerEvent/*, triggerData*/ ) {
-            if ( actionFunc ) {
-                if ( selector === "document" ) {
-                    this.$( document ).bind( triggerEvent, actionFunc );
-                } else if ( selector === "window" ) {
-                    this.$( window ).bind( triggerEvent, actionFunc );
+        "element": function (actionFunc, selector, triggerEvent/*, triggerData*/) {
+            if (actionFunc) {
+                if (selector === "document") {
+                    this.$(document).bind(triggerEvent, actionFunc);
+                } else if (selector === "window") {
+                    this.$(window).bind(triggerEvent, actionFunc);
                 }
                 else {
-                    this.$( selector ).bind( triggerEvent, actionFunc );
+                    this.$(selector).bind(triggerEvent, actionFunc);
                 }
             }
         },
-        "timeline": function( actionFunc, timelineName, triggerEvent/*, triggerData*/ ) {
-            if ( actionFunc && timelineName ) {
-                var tld = this.getTimelineData( timelineName ),
-                        toState = tld.toState,
-                        fromState = tld.fromState;
+        "timeline": function (actionFunc, timelineName, triggerEvent/*, triggerData*/) {
+            if (actionFunc && timelineName) {
+                var tld = this.getTimelineData(timelineName),
+                    toState = tld.toState,
+                    fromState = tld.fromState;
                 var tlProxy = {};
 
                 tlProxy[triggerEvent] = actionFunc;
 
-                var tl = this._getTimeline( timelineName, toState, fromState );
-                tl.addObserver( tlProxy );
+                var tl = this._getTimeline(timelineName, toState, fromState);
+                tl.addObserver(tlProxy);
             }
         },
-        "symbol": function( actionFunc, objectName, triggerEvent/*, triggerData*/ ) {
-            if ( actionFunc ) {
+        "symbol": function (actionFunc, objectName, triggerEvent/*, triggerData*/) {
+            if (actionFunc) {
                 var symProxy = {};
                 symProxy[triggerEvent] = actionFunc;
-                this.addObserver( symProxy );
+                this.addObserver(symProxy);
             }
         }
 
     };
 
-    function setSymbol(ele, sym){
+    function setSymbol(ele, sym) {
         ele.edgeSymbol = sym;
     }
+
     function getSymbol(ele) {
         return ele ? ele.edgeSymbol : undefined;
     }
+
+    function isStageWrapped($stg) {
+        return $stg.parent().hasClass('center-wrapper'); // we always double wrap so just check for inner wrap
+    }
+
+    function wrapForStageScaling($stage) {
+        // Wrap in 2 divs. Inner is for centering. Outer is to push sibs in flow down below.
+        // They both get their size adjusted when we scale the stage.
+        // This has to be called before dom is built, because reparenting causes
+        // audio autoplay to be disabled (at least on some browsers)
+        if(!isStageWrapped($stage)) {
+            $stage.wrap("<div class='flow-wrapper' style='width:1px'><div class='center-wrapper'></div></div>");
+        }
+    }
+
+    function bindStageScaling(sym) {
+        var stage = sym.$('Stage');
+        if (!sym.composition.alreadyWrapped) {
+            // If we are already wrapped, the preloader got there first, and no need to duplicate the handling
+            function scaleStage() {
+                var isWrapped = isStageWrapped(stage),
+                    parent = isWrapped ? stage.parent().parent().parent() : stage.parent(),
+                    parentWidth = parent.width(),
+                    parentHeight = parent.height(),
+                    stageWidth = stage.width(),
+                    stageHeight = stage.height(),
+                    browserHeight = $(window).height(),
+                    desiredWidth,
+                    desiredHeight,
+                    minWidth,
+                    maxWidth,
+                    propVal,
+                    rescaleW,
+                    rescaleH,
+                    rescale = 1,
+                    scaleToFit,
+                    centerStage = sym.options.data.centerStage,
+                    baseStateName = sym.options.data.initialState,
+                    baseStateForStage,
+                    orgX = '0',
+                    orgY = '0',
+                    origin,
+                    offset,
+                    rePx = /px|^0$/,
+                    flowParent,
+                    isParentBody = parent[0].nodeName.toLowerCase() === 'body';
+                if (isParentBody) {
+                    parentHeight = browserHeight;
+                }
+                baseStateForStage = sym.options.data.states[baseStateName]['${_Stage}'];
+                if (baseStateForStage) {
+                    for (i = 0; i < baseStateForStage.length; i++) {
+                        if (baseStateForStage[i][0] === 'style' && baseStateForStage[i][1] === 'min-width') {
+                            propVal = baseStateForStage[i][2];
+                            minWidth = rePx.test(propVal) ? parseInt(propVal, 10) : undefined;
+                        }
+                        if (baseStateForStage[i][0] === 'style' && baseStateForStage[i][1] === 'max-width') {
+                            propVal = baseStateForStage[i][2];
+                            maxWidth = rePx.test(propVal) ? parseInt(propVal, 10) : undefined;
+                        }
+                    }
+                }
+                desiredWidth = Math.round(parentWidth);
+                desiredHeight = Math.round(parentHeight);
+                rescaleW = desiredWidth / stageWidth;
+                rescaleH = desiredHeight / stageHeight;
+                scaleToFit = sym.options.data.scaleToFit;
+
+                if (scaleToFit === 'both') {
+                    rescale = Math.min(rescaleW, rescaleH);
+                } else if (scaleToFit === 'height') {
+                    rescale = rescaleH;
+                } else if (scaleToFit === 'width') {
+                    rescale = rescaleW;
+                }
+                if (maxWidth !== undefined) {
+                    rescale = Math.min(rescale, maxWidth / stageWidth);
+                }
+                if (minWidth !== undefined) {
+                    rescale = Math.max(rescale, minWidth / stageWidth);
+                }
+                origin = orgX + ' ' + orgY;
+                stage.css('transform-origin', origin);
+                stage.css('-o-transform-origin', origin);
+                stage.css('-ms-transform-origin', origin);
+                stage.css('-webkit-transform-origin', origin);
+                stage.css('-moz-transform-origin', origin);
+                stage.css('-o-transform-origin', origin);
+                stage.css('transform', 'scale(' + rescale + ')');
+                stage.css('-o-transform', 'scale(' + rescale + ')');
+                stage.css('-ms-transform', 'scale(' + rescale + ')');
+                stage.css('-webkit-transform', 'scale(' + rescale + ')');
+                stage.css('-moz-transform', 'scale(' + rescale + ')');
+                stage.css('-o-transform', 'scale(' + rescale + ')');
+                if (!isParentBody || isWrapped) {
+                    // Handle the centering wrapper so it's the same size - without this wrapper, centering would try to work on
+                    // the non-transformed size, so it would break when the parent gets smaller than the stage
+                    stage.parent().height(Math.round(stageHeight * rescale)).width(Math.round(stageWidth * rescale));
+                }
+                if (isWrapped) {
+                    // Flowparent
+                    flowParent = stage.parent().parent();
+                    flowParent.height(Math.round(stageHeight * rescale + stage.offset().top - flowParent.offset().top));
+                }
+            }
+
+            $(window).on('resize', function () {
+                scaleStage();
+            });
+            $(document).ready(function () {
+                scaleStage();
+            });
+        }
+    }
+
+    function centerTheStage(stage, data) {
+        var centerStage = data.centerStage;
+        stage = $(stage);
+        if (isStageWrapped(stage)) {
+            stage = stage.parent();
+        }
+        if (centerStage === 'both' || centerStage === 'horizontal') {
+            stage.css('position', 'absolute');
+            stage.css('margin-left', 'auto');
+            stage.css('margin-right', 'auto');
+            stage.css('left', '0');
+            stage.css('right', '0');
+        }
+        if (centerStage === 'both' || centerStage === 'vertical') {
+            // Note we assume the stage height is already specified to make this work
+            stage.css('position', 'absolute');
+            stage.css('margin-top', 'auto');
+            stage.css('margin-bottom', 'auto');
+            stage.css('top', '0');
+            stage.css('bottom', '0');
+        }
+    }
+
     /**
      @name Edge.Symbol
      @class The primary public api for the Edge runtime framework.
      Edge.Symbol is a 'Widget' attached to a node which owns all the
      Symbol-like behavior, including states, timelines and actions
      **/
-    var Symbol = Edge.Symbol = function( ele, opts ) {
-        Edge.Notifier.call( this );
+    var Symbol = Edge.Symbol = function (ele, opts) {
+        Edge.Notifier.call(this);
 
-        $.extend( this, Edge.Symbol.config );
+        $.extend(this, Edge.Symbol.config);
 
         this.widgetEventPrefix = "edgeSym_";
         this.element = null;
-        this.options = { data: null, initialState : null};
+        this.options = { data: null, initialState: null};
 
         this.effectors = {};
         this.states = {};
@@ -5020,9 +5451,9 @@ jQuery.extend( jQuery.easing,
         this.autoPlay = {};
         this.defaultBaseState = "Base State";
         this.baseState = null;
-		this.symbolBaseStateOverrides = null;
-		
-        this._init( ele, opts );
+        this.symbolBaseStateOverrides = null;
+
+        this._init(ele, opts);
     };
 
     Edge.symbol = Symbol;   // Keep lowercase as an alias for now - but its use is deprecated
@@ -5047,266 +5478,292 @@ jQuery.extend( jQuery.easing,
      @private
      **/
     var symbolDefns = Edge.symbolDefns = {};
-    
+
     var baseDataName = 'edgeBaseData';
     Edge.baseDataName = baseDataName;
 
     function createSimpleMotionPathData(selector, beginPt, endPt, start, duration) {
         var delX = endPt.x - beginPt.x, delY = endPt.y - beginPt.y;
         var len = Math.sqrt(delX * delX + delY + delY);
-        return {id:"generated", tween: [ "motion", selector, [[beginPt.x, beginPt.y,0,0,0,0,0],[endPt.x, endPt.y,0,0,0,0,len]], [[0,0],[0,0]]], position: start, duration: duration};
+        return {id: "generated", tween: [ "motion", selector, [
+            [beginPt.x, beginPt.y, 0, 0, 0, 0, 0],
+            [endPt.x, endPt.y, 0, 0, 0, 0, len]
+        ], [
+            [0, 0],
+            [0, 0]
+        ]], position: start, duration: duration};
     }
 
     function isOpera() {
-        if(typeof Symbol.isOpera === 'undefined') {
+        if (typeof Symbol.isOpera === 'undefined') {
             Symbol.isOpera = /Opera/.test(navigator.userAgent);
         }
         return Symbol.isOpera;
     }
+
+    
+
+    function isiOS() {
+        if (typeof Symbol.isiOS === 'undefined') {
+	    
+	    var ua = navigator.userAgent;
+	    var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
+	    if (isWebkit && (/iPad/.test(ua) || /iPod/.test(ua) || /iPhone/.test(ua) )) {
+		Symbol.isiOS = true;
+	    } else
+		Symbol.isiOS = false;
+        }
+        return Symbol.isiOS;
+    }
+    
+
     // Symbol private methods - use "call(this, ...)" to call these
     // By making them functions rather than properties on prototype Closure compiler can minify the names
+    // In retrospect, I should have made thes plain old functions with a Symbol as the first parameter.
+    // Doing that would make jsLint happier.
 
     // Predeclare for jsHint
     var _getSymbolVars, _reIdDOMElements, _getParentSymbol, _processNestedSymbols, _getActionCallbackFunc, _buildStateForCache, _applyRules, _getCachedTimeline,
-            _makeTimelineKey, _isParameterizedActorTL, _isParameterizedActorState, _rememberBaseState, _createSymbolChild, _addChildSymbol;
+        _makeTimelineKey, _isParameterizedActorTL, _isParameterizedActorState, _rememberBaseState, _createSymbolChild, _addChildSymbol;
 
-    function _createEvent( opts ) {
+    function _createEvent(opts) {
         var e = { Symbol: this, element: this.element, performDefaultAction: true };
-        $.extend( e, opts );
+        $.extend(e, opts);
         return e;
     }
-    
+
     function _makeDefaultVariables() {
         var vars = {};
         var variables = this.options.data.variables;
-        if ( variables ) {
+        if (variables) {
             var varName;
-            for ( varName in variables ) {
-                if ( variables.hasOwnProperty( varName ) ) {
+            for (varName in variables) {
+                if (variables.hasOwnProperty(varName)) {
                     vars[varName] = variables[varName].defaultValue;
                 }
             }
         }
-        
-        $.extend( vars, _getSymbolVars.call(this) );
+
+        $.extend(vars, _getSymbolVars.call(this));
 
         return vars;
     }
-    
-    function _injectMarkup ( htmlMarkup, opts ) {
+
+    function _injectMarkup(htmlMarkup, opts) {
         var markup = htmlMarkup;
-        var evt = _createEvent.call(this, {markup: markup} );
-        this.notifyObservers( "onPreInjectMarkup", evt );
+        var evt = _createEvent.call(this, {markup: markup});
+        this.notifyObservers("onPreInjectMarkup", evt);
         markup = evt.markup;
-        var postEvt = _createEvent.call(this, {markup: markup} );
-        if ( !evt.performDefaultAction ) {
-            this.notifyObservers( "onPostInjectMarkup", postEvt );
+        var postEvt = _createEvent.call(this, {markup: markup});
+        if (!evt.performDefaultAction) {
+            this.notifyObservers("onPostInjectMarkup", postEvt);
             return;
         }
         var i;
         var variables = this.variableValues;
         var content = this.options.data.content;
-        if ( !markup && content ) {
-            if ( content.ref ) {
+        if (!markup && content) {
+            if (content.ref) {
                 markup = "";
-                $( content.ref ).each( function( i, ele ) {
-                    markup += $( ele ).html();
-                } );
-            } else if ( content.markup ) {
+                $(content.ref).each(function (i, ele) {
+                    markup += $(ele).html();
+                });
+            } else if (content.markup) {
                 markup = content.markup;
-            } else if ( content.dom ) {
+            } else if (content.dom) {
                 var DeclareMarkup = Edge.DeclareMarkup;  // From edge.declare.js 
-                if ( DeclareMarkup ) {
+                if (DeclareMarkup) {
 
                     var aDom = content.dom;
                     var aSymbolInstances = content.symbolInstances;
                     //if (this.options.opts && this.options.opts.regenerateID === true) {
-                    if ( true ) {
+                    if (true) {
                         // Re Id Symbol content before instantiating to avoid id duplication
                         // for multiple instances of the same Symbol. Excludes the stage.
-                        
-                        aDom = JSON.parse( JSON.stringify( content.dom ) );
+                        aDom = JSON.parse(JSON.stringify(content.dom));
                         aSymbolInstances = [];
-                        if ( content.symbolInstances ) {
-                            aSymbolInstances = JSON.parse( JSON.stringify( content.symbolInstances ) );
+                        if (content.symbolInstances) {
+                            aSymbolInstances = JSON.parse(JSON.stringify(content.symbolInstances));
                         }
                         var domLength = aDom.length;
-                        for ( i = 0; i < domLength; i++ ) {
-                            _reIdDOMElements.call( this, aDom[i], aSymbolInstances );
+                        for (i = 0; i < domLength; i++) {
+                            _reIdDOMElements.call(this, aDom[i], aSymbolInstances);
                         }
                     }
-                    DeclareMarkup.DOMNodeSeek( $( this.element )[0], this.getSymbolTypeName() );
+                    DeclareMarkup.DOMNodeSeek($(this.element)[0], this.getSymbolTypeName());
 
-                    DeclareMarkup.renderDOM( aDom, $( this.element )[0], variables, this.getSymbolTypeName(), aSymbolInstances, this.composition );
-                    if ( this.idLookup ) {
+                    DeclareMarkup.renderDOM(aDom, $(this.element)[0], variables, this.getSymbolTypeName(), aSymbolInstances, this.composition);
+                    if (this.idLookup) {
                         var sel;
-                        for ( sel in this.idLookup ) {
-                            if ( this.idLookup.hasOwnProperty( sel ) ) {
-                                $( sel ).data( "originalId", this.idLookup[sel] );
-                                $( sel ).data( "symParent", this );
+                        for (sel in this.idLookup) {
+                            if (this.idLookup.hasOwnProperty(sel)) {
+                                $(sel).data("originalId", this.idLookup[sel]);
+                                $(sel).data("symParent", this);
                             }
                         }
                     }
-                    if ( aSymbolInstances && aSymbolInstances.length > 0 ) {
-                        _processNestedSymbols.call( this, aSymbolInstances );
+                    if (aSymbolInstances && aSymbolInstances.length > 0) {
+                        _processNestedSymbols.call(this, aSymbolInstances);
                     }
-                    DeclareMarkup.DOMNodeCompleted( $( this.element )[0] );
+                    DeclareMarkup.DOMNodeCompleted($(this.element)[0]);
                 }
             }
         }
-        if ( markup ) {
-            markup = substituteVariables( markup, variables );
-            $( markup ).appendTo( this.element );
+        if (markup) {
+            markup = substituteVariables(markup, variables);
+            $(markup).appendTo(this.element);
         }
-        this.notifyObservers( "onPostInjectMarkup", postEvt );
+        this.notifyObservers("onPostInjectMarkup", postEvt);
     }
 
-    _processNestedSymbols = function( aSymbolInstances ) {
-        if ( !aSymbolInstances ) {
+    _processNestedSymbols = function (aSymbolInstances) {
+        if (!aSymbolInstances) {
             return;
         }
 
         this.aSymbolInstances = [];
         var instLen = aSymbolInstances.length;
-        for ( var i = 0; i < instLen; i++ ) {
+        for (var i = 0; i < instLen; i++) {
             // Selector is currently Id since the DOM code depends on a unique id
             var symbolInstanceElementSelector = '#' + aSymbolInstances[i].id;
-            if ( $( symbolInstanceElementSelector )[0] && this.composition ) {
-				var aBaseStateProperties = this._getSelectorBaseState(symbolInstanceElementSelector);
-                this.composition.convertElementToSymbol( symbolInstanceElementSelector, aSymbolInstances[i].symbolName, {autoPlay:aSymbolInstances[i].autoPlay, variables:aSymbolInstances[i].variables, symbolBaseState:aBaseStateProperties} );
-                this.aSymbolInstances.push( symbolInstanceElementSelector );
+            if ($(symbolInstanceElementSelector)[0] && this.composition) {
+                var aBaseStateProperties = this._getSelectorBaseState(symbolInstanceElementSelector);
+                this.composition.convertElementToSymbol(symbolInstanceElementSelector, aSymbolInstances[i].symbolName, {autoPlay: aSymbolInstances[i].autoPlay, variables: aSymbolInstances[i].variables, symbolBaseState: aBaseStateProperties});
+                this.aSymbolInstances.push(symbolInstanceElementSelector);
             }
         }
     };
 
-    _reIdDOMElements = function( oN, aSymbolInstances ) {
-        if ( !oN ) {
+    _reIdDOMElements = function (oN, aSymbolInstances) {
+        if (!oN) {
             return;
         }
 
-        var eleId = $( this.element )[0].id;
+        var eleId = $(this.element)[0].id;
         var nodeId = oN.id;
-        if ( !nodeId || nodeId === "" ) {
+        if (!nodeId || nodeId === "") {
             nodeId = Symbol._makeUniqueID();
         }
         var keyId = "_" + nodeId;
         var newNodeId = eleId + "_" + nodeId;
         var instLen = aSymbolInstances.length;
-        for ( var i = 0; i < instLen; i++ ) {
-            if ( aSymbolInstances[i].id === oN.id ) {
+        for (var i = 0; i < instLen; i++) {
+            if (aSymbolInstances[i].id === oN.id) {
                 aSymbolInstances[i].id = newNodeId;
             }
         }
 
         this.idLookup = this.idLookup || {};
         this.idLookup["#" + newNodeId] = nodeId;
-        this.setVariable( keyId, "#" + newNodeId );
+        this.setVariable(keyId, "#" + newNodeId);
 
         oN.oldId = oN.id;
         oN.id = newNodeId;
 
-        if ( oN.c ) {
+        if (oN.c) {
             var objLen = oN.c.length;
-            for ( var j = 0; j < objLen; j++ ) {
-                _reIdDOMElements.call(this, oN.c[j], aSymbolInstances );
+            for (var j = 0; j < objLen; j++) {
+                _reIdDOMElements.call(this, oN.c[j], aSymbolInstances);
             }
         }
 
     };
 
-    _getParentSymbol = function() {
+    _getParentSymbol = function () {
         return Symbol.getParentSymbol(this.element);
     };
 
-    _addChildSymbol = function(oSymbolInstance) {
-        if (!oSymbolInstance)
+    _addChildSymbol = function (oSymbolInstance) {
+        if (!oSymbolInstance) {
             return;
-        
-        if (!this.aSymbolInstances)
+        }
+
+        if (!this.aSymbolInstances) {
             this.aSymbolInstances = [];
- 
+        }
+
         this.aSymbolInstances.push(oSymbolInstance.getSymbolElement());
     };
- 
+
+    // Map from short names to full-length human readable ones
     function _mapTweenNames(tw) {
-        if(!tw.tween && tw.tw !== null && typeof tw.tw !=="undefined") {
+        if (!tw.tween && tw.tw !== null && typeof tw.tw !== "undefined") {
             tw.tween = tw.tw;
             tw.tw = undefined;
         }
-        if(tw.tween && tw.tween.length > 3) {
+        if (tw.tween && tw.tween.length > 3) {
             var op = tw.tween[4];
-            if(op) {
-                if(!op.fromValue && op.f !== null) {
+            if (op) {
+                if (!op.fromValue && op.f !== null) {
                     op.fromValue = op.f;
                     op.f = undefined;
                 }
-                if(!op.valueTemplate && op.vt !== null) {
+                if (!op.valueTemplate && op.vt !== null) {
                     op.valueTemplate = op.vt;
                     op.vt = undefined;
                 }
             }
         }
-        
-        if(!tw.position && tw.p !== null && typeof tw.p !=="undefined") {
+
+        if (!tw.position && tw.p !== null && typeof tw.p !== "undefined") {
             tw.position = tw.p;
             tw.p = undefined;
         }
-        if(!tw.duration && tw.d !== null && typeof tw.d !=="undefined") {
+        if (!tw.duration && tw.d !== null && typeof tw.d !== "undefined") {
             tw.duration = tw.d;
             tw.d = undefined;
         }
-        if(!tw.easing && tw.e !== null && typeof tw.e !=="undefined") {
+        if (!tw.easing && tw.e !== null && typeof tw.e !== "undefined") {
             tw.easing = tw.e;
             tw.e = undefined;
         }
-        if(!tw.trigger && tw.tr !== null && typeof tw.tr !=="undefined") {
+        if (!tw.trigger && tw.tr !== null && typeof tw.tr !== "undefined") {
             tw.trigger = tw.tr;
             tw.tr = undefined;
         }
     }
-    
-        
-    function _createTimelineSetFromData( tlData, stateData ) {
+
+    function _createTimelineSetFromData(tlData, stateData) {
         this.states = stateData;
         this.timelines = tlData;
         this.baseState = this.options.data.baseState;
-        if ( !this.baseState ) {
+        if (!this.baseState) {
             this.baseState = "Base State";
         }
 
         var sym = this;
 
-        var _effectorFilter = function( valIn, oTw, ele, sProp, sUnits, elapsed, context ) {
+        var _effectorFilter = function (valIn, oTw, ele, sProp, sUnits, elapsed, context) {
             var selEle = "#" + ele.id;
             var oInsp = sym.effectors[selEle];
             if (ele) {
                 var msDur = oTw.duration;
-                var delta = Edge.Effectors.applyDelta( sym, sProp, ele, valIn, sym.effectors[selEle], msDur, oTw, elapsed, context);
-                if ( delta ) {
+                var delta = Edge.Effectors.applyDelta(sym, sProp, ele, valIn, sym.effectors[selEle], msDur, oTw, elapsed, context);
+                if (delta) {
                     valIn += delta;
                 }
             }
             return valIn;
         };
 
-        for ( var tln in this.timelines ) {
-            if ( this.timelines.hasOwnProperty( tln )) {
+        for (var tln in this.timelines) {
+            if (this.timelines.hasOwnProperty(tln)) {
                 var tl = this.timelines[tln];
 
-                for ( var i = 0; i < tl.timeline.length; i++ ) {
+                for (var i = 0; i < tl.timeline.length; i++) {
                     var tw = tl.timeline[i];
 
-                    if ( sym.effectors ) {
-                        if ( tw.tween && tw.tween.length > 2 ) {
+                    if (sym.effectors) {
+                        if (tw.tween && tw.tween.length > 2) {
                             var sel = tw.tween[1];
                             var prop = tw.tween[2];
                             var opt = tw.tween[4];
-                           
-                            //see if we need to add a filter!
-                            var sId = substituteVariables( sel, sym.variableValues );
-                            if ( sym.effectors[sId] ) {
 
-                                if ( Edge.Effectors.affectsProperty( sym, prop, sym.effectors[sId] ) ) {
+                            //see if we need to add a filter!
+                            var sId = substituteVariables(sel, sym.variableValues);
+                            if (sym.effectors[sId]) {
+
+                                if (Edge.Effectors.affectsProperty(sym, prop, sym.effectors[sId])) {
                                     opt.filter = _effectorFilter;
                                 }
                             }
@@ -5320,283 +5777,284 @@ jQuery.extend( jQuery.easing,
     }
 
 
-    function _addBindingFromData ( bd ) {
+    function _addBindingFromData(bd) {
         var td = bd[0];
-        if ( td[0] === 'element' ) {
-            var newEle = substituteVariables( td[1], this.variableValues );
-            if ( newEle !== td[1] ) {
-                td = Edge.cloneJSONObject( td );
+        if (td[0] === 'element') {
+            var newEle = substituteVariables(td[1], this.variableValues);
+            if (newEle !== td[1]) {
+                td = Edge.cloneJSONObject(td);
                 td[1] = newEle;
             }
         }
         var tfunc = triggerDict[td[0]];
-        if ( tfunc ) {
-            var afunc = _getActionCallbackFunc.call( this, td[0], td[1], bd.slice( 1 ) );
-            if ( afunc ) {
-                tfunc.apply( this, [ afunc ].concat( td.slice( 1 ) ) );
+        if (tfunc) {
+            var afunc = _getActionCallbackFunc.call(this, td[0], td[1], bd.slice(1));
+            if (afunc) {
+                tfunc.apply(this, [ afunc ].concat(td.slice(1)));
             }
         }
     }
 
-    function _addBindingsFromData( bindingData ) {
+    function _addBindingsFromData(bindingData) {
         var cnt = bindingData.length;
-        for ( var i = 0; i < cnt; i++ ) {
+        for (var i = 0; i < cnt; i++) {
             var bd = bindingData[i];
-            _addBindingFromData.call( this,  bd );
+            _addBindingFromData.call(this, bd);
         }
     }
 
-    _getActionCallbackFunc = function( eventType, selectorOrTL, funcName ) {
+    function _getActionCallbackFunc(eventType, selectorOrTL, funcName) {
         var f = this[funcName[0]];
         var self = this;
-        function dispatchError(sym, args){
 
-            if(args.length >= 2 && typeof args[0] === 'object' && typeof args[1] === 'object' && args[1].type !== 'onError') {
+        function dispatchError(sym, args) {
+
+            if (args.length >= 2 && typeof args[0] === 'object' && typeof args[1] === 'object' && args[1].type !== 'onError') {
                 var evt;
-                evt = $.Event( "onError" );
-                if(self){
+                evt = $.Event("onError");
+                if (self) {
                     evt.compId = self.getComposition().compId;
                 }
                 evt.originalEvent = args[1];
-                $( document ).triggerHandler( evt );
+                $(document).triggerHandler(evt);
             }
             window.console.log("Javascript error in event handler! Event Type = " + eventType);
         }
 
-        if ( typeof f === "function" ) {
-            var args = funcName.slice( 1 );
-            if ( eventType === 'element' ) {
-                return function() {
+        if (typeof f === "function") {
+            var args = funcName.slice(1);
+            if (eventType === 'element') {
+                return function () {
                     var args;
                     try {
-                        args = Array.prototype.slice.call( arguments );
-                        args.unshift( self );
-                        if(args.length >= 2 && typeof args[0] === 'object' && typeof args[1] === 'object' && args[1].type === 'compositionReady') {
+                        args = Array.prototype.slice.call(arguments);
+                        args.unshift(self);
+                        if (args.length >= 2 && typeof args[0] === 'object' && typeof args[1] === 'object' && args[1].type === 'compositionReady') {
                             // This is a hack but need a fix for multiple compositionReady messages when there are multiple comps in a page
-                            if(typeof args[1].compId === 'string' && typeof args[0].composition === 'object' && args[1].compId !== args[0].composition.compId) {
+                            if (typeof args[1].compId === 'string' && typeof args[0].composition === 'object' && args[1].compId !== args[0].composition.compId) {
                                 return null;
                             }
                         }
-                        return f.apply( self, args );
+                        return f.apply(self, args);
                     }
-                    catch( err ) {
+                    catch (err) {
                         dispatchError(self, args);
                         return undefined;
                     }
                 };
-            } else if ( eventType === 'timeline' ) {
+            } else if (eventType === 'timeline') {
                 var tlName = selectorOrTL;
-                return function( tl, data ) {
+                return function (tl, data) {
                     var args;
                     try {
                         var e;
-                        if ( data && data.methodName && /^trig_/.test( data.methodName ) ) {
+                        if (data && data.methodName && /^trig_/.test(data.methodName)) {
                             // Triggers fire custom timeline events
-                            e = $.Event( "trigger" );
+                            e = $.Event("trigger");
                         }
                         else {
-                            e = $.Event( eventType );
+                            e = $.Event(eventType);
                         }
-                        if ( data ) {
-                            $.extend( e, data );
+                        if (data) {
+                            $.extend(e, data);
                         }
                         e.timeline = tl;
-                        args = Array.prototype.slice.call( arguments );
-                        args.splice( 0, 0, e, tlName );
-                        args.unshift( self );
-                        return f.apply( self, args );
+                        args = Array.prototype.slice.call(arguments);
+                        args.splice(0, 0, e, tlName);
+                        args.unshift(self);
+                        return f.apply(self, args);
                     }
-                    catch( err ) {
+                    catch (err) {
                         dispatchError(self, args);
                         return undefined;
                     }
                 };
-            } else if (eventType === 'symbol' ) {
-                return function ( sym, data ) {
+            } else if (eventType === 'symbol') {
+                return function (sym, data) {
                     var args;
                     try {
                         var e, variableValue;
-                        if ( data && data.methodName ) {
-                            e = $.Event( data.methodName );
+                        if (data && data.methodName) {
+                            e = $.Event(data.methodName);
                         }
                         else {
-                            e = $.Event( eventType );
+                            e = $.Event(eventType);
                         }
 
-                        if ( data ) {
-                            $.extend( e, data );
-                            if ( data.variableValue ) {
+                        if (data) {
+                            $.extend(e, data);
+                            if (data.variableValue) {
                                 variableValue = data.variableValue;
                             }
                         }
 
-                        args = Array.prototype.slice.call( arguments );
-                        args.splice( 0, 0, e, variableValue );
-                        args.unshift( self );
-                        return f.apply( self, args );
+                        args = Array.prototype.slice.call(arguments);
+                        args.splice(0, 0, e, variableValue);
+                        args.unshift(self);
+                        return f.apply(self, args);
                     }
-                    catch ( err ) {
-                        dispatchError( self, args );
+                    catch (err) {
+                        dispatchError(self, args);
                         return undefined;
                     }
                 };
             }
         }
         return null;
-    };
-
-    function _addActionsFromData( actionData ) {
-        $.extend( this, actionData ); // this puts the actions right on object - this makes aSymbol.anAction() work and you can use 'this'
     }
 
-    _getSymbolVars = function(){
-        return { symbolSelector : '#' + $( this.element )[0].id };
-    };
+    function _addActionsFromData(actionData) {
+        $.extend(this, actionData); // this puts the actions right on object - this makes aSymbol.anAction() work and you can use 'this'
+    }
+
+    function _getSymbolVars() {
+        return { symbolSelector: '#' + $(this.element)[0].id };
+    }
 
     function _goToInitialState() {
-         var opts = {variables: this.variableValues };
-         var autoPlay; // global
-         var stateName = this.options.data.initialState;
-         if ( !stateName ) {
-             stateName = this.options.data.baseState;
-         }
-         if ( !Symbol.useCSSAnimation ) {
-             if ( stateName ) {
-                 var rules = _buildStateForCache.call( this, null, stateName, opts );
-                 _applyRules.call( this, rules );
-             }
-             else {
-                 for ( var tlName in this.timelines ) {
-                     if ( this.timelines.hasOwnProperty( tlName ) ) {
-                         autoPlay = this.getAutoPlay( tlName );
-                         if ( typeof autoPlay === 'undefined' ) {
-                             var tld = this.getTimelineData( tlName );
-                             if ( tld ) {
-                                 autoPlay = tld.autoPlay;
-                             }
-                         }
-                         if ( typeof autoPlay === 'undefined' || autoPlay === "true" || autoPlay === true ) {
-                             this.seekTimeline( tlName, 0 );
-                         }
-                     }
-                 }
-             }
-         }
-     }
-    
-     function _getDefltTL() {
-         return "Default Timeline";
-     }
+        var opts = {variables: this.variableValues };
+        var autoPlay; // global
+        var stateName = this.options.data.initialState;
+        if (!stateName) {
+            stateName = this.options.data.baseState;
+        }
+        if (!Symbol.useCSSAnimation) {
+            if (stateName) {
+                var rules = _buildStateForCache.call(this, null, stateName, opts);
+                _applyRules.call(this, rules);
+            }
+            else {
+                for (var tlName in this.timelines) {
+                    if (this.timelines.hasOwnProperty(tlName)) {
+                        autoPlay = this.getAutoPlay(tlName);
+                        if (typeof autoPlay === 'undefined') {
+                            var tld = this.getTimelineData(tlName);
+                            if (tld) {
+                                autoPlay = tld.autoPlay;
+                            }
+                        }
+                        if (typeof autoPlay === 'undefined' || autoPlay === "true" || autoPlay === true) {
+                            this.seekTimeline(tlName, 0);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-    function _preNotify( eventName, tlName, options ) {
+    function _getDefltTL() {
+        return "Default Timeline";
+    }
+
+    function _preNotify(eventName, tlName, options) {
         var o = {}; // shallow copy the options
-        $.extend( o, options );
-        var evt = _createEvent.call( this, { tlName: tlName, tlOptions: o } );
-        this.notifyObservers( eventName, evt );
-        if ( !evt.performDefaultAction ) {
+        $.extend(o, options);
+        var evt = _createEvent.call(this, { tlName: tlName, tlOptions: o });
+        this.notifyObservers(eventName, evt);
+        if (!evt.performDefaultAction) {
             o = evt.tlOptions;
             var postEvt = { Symbol: this, timelineName: tlName, tlOptions: o, performDefaultAction: true };
-            eventName = eventName.replace( /onPre/, 'onPost' );
-            this.notifyObservers( eventName, postEvt );
+            eventName = eventName.replace(/onPre/, 'onPost');
+            this.notifyObservers(eventName, postEvt);
             return undefined;
         }
         return evt.tlOptions;
     }
 
-    function _posToNum( tlName, posInMsOrLabel ) {
-        if ( typeof posInMsOrLabel === "string" ) {
+    function _posToNum(tlName, posInMsOrLabel) {
+        if (typeof posInMsOrLabel === "string") {
 
-            var tld = this.getTimelineData( tlName );
-            if ( !tld || !tld.labels ) {
-                return 0;
+            var tld = this.getTimelineData(tlName);
+            if (!tld || !tld.labels) {
+                return undefined;
             }
             return tld.labels[posInMsOrLabel];
         }
         return posInMsOrLabel;
     }
 
-    function _getTimelineWithOwnStates( timelineName ) {
-        var tld = this.getTimelineData( timelineName );
-        if ( !tld ) {
+    function _getTimelineWithOwnStates(timelineName) {
+        var tld = this.getTimelineData(timelineName);
+        if (!tld) {
             return null;
         }
 
-        return this._getTimeline( timelineName, tld.toState, tld.fromState );
+        return this._getTimeline(timelineName, tld.toState, tld.fromState);
     }
 
-    function _stop( tlName, opts ) {
-        var tl = _getTimelineWithOwnStates.call( this, tlName );
-        if ( tl ) {
-            tl.stop( opts );
+    function _stop(tlName, opts) {
+        var tl = _getTimelineWithOwnStates.call(this, tlName);
+        if (tl) {
+            tl.stop(opts);
         }
     }
-    
-    function _saveObservers( tlName ) {
-        var tld = this.timelines[tlName];
-        var tl = _getCachedTimeline.call( this, tlName, tld.toState, tld.fromState );
-        if ( tl ) {
 
-            if ( !this.timelineObservers ) {
+    // Implementation for timelines and states
+    function _saveObservers(tlName) {
+        var tld = this.timelines[tlName];
+        var tl = _getCachedTimeline.call(this, tlName, tld.toState, tld.fromState);
+        if (tl) {
+
+            if (!this.timelineObservers) {
                 this.timelineObservers = {};
             }
 
-            this.timelineObservers[tlName] = tl.observers.slice( 0 );
+            this.timelineObservers[tlName] = tl.observers.slice(0);
         }
     }
 
-    function _restoreObservers( tlName, tl ) {
-        if ( this.timelineObservers && this.timelineObservers[tlName] ) {
+    function _restoreObservers(tlName, tl) {
+        if (this.timelineObservers && this.timelineObservers[tlName]) {
 
             var obs = this.timelineObservers[tlName];
-            if ( obs ) {
+            if (obs) {
                 var i;
                 var cnt = obs.length;
-                for ( i = 0; i < cnt; i++ ) {
-                    tl.addObserver( obs[i].observer );
+                for (i = 0; i < cnt; i++) {
+                    tl.addObserver(obs[i].observer);
                 }
-
             }
         }
     }
 
-    function _isCacheDirty( tlName ) {
-         var tlKey = _makeTimelineKey.call( this, tlName );
-         /*jshint eqnull:true */
-         return this.timelineCache[tlKey] == null;
-     }
+    function _isCacheDirty(tlName) {
+        var tlKey = _makeTimelineKey.call(this, tlName);
+        /*jshint eqnull:true */
+        return this.timelineCache[tlKey] == null;
+    }
 
-    function  _getStateData( stateName ) {
-         return this.states[stateName];
-     }
+    function _getStateData(stateName) {
+        return this.states[stateName];
+    }
 
-     _makeTimelineKey = function( timelineName, toState, fromState ) {
-         var tld = null;
-         if ( !toState || !fromState ) {
-             tld = this.getTimelineData( timelineName );
-         }
-         if ( tld ) {
-             if ( !toState ) {
-                 toState = tld.toState;
-             }
-             if ( !fromState ) {
-                 fromState = tld.fromState;
-             }
-         }
-         return timelineName + "-" + (toState ? toState : "") + "-" + (fromState ? fromState : "");
-     };
+     function _makeTimelineKey(timelineName, toState, fromState) {
+        var tld = null;
+        if (!toState || !fromState) {
+            tld = this.getTimelineData(timelineName);
+        }
+        if (tld) {
+            if (!toState) {
+                toState = tld.toState;
+            }
+            if (!fromState) {
+                fromState = tld.fromState;
+            }
+        }
+        return timelineName + "-" + (toState ? toState : "") + "-" + (fromState ? fromState : "");
+    }
 
-    function _dirtyTimeline( tlName ) {
+    function _dirtyTimeline(tlName) {
 
         var tld = this.timelines[tlName];
-        var tl = _getCachedTimeline.call( this, tlName, tld.toState, tld.fromState );
-        if ( tl && tl.updateFinalizer) {
-            if(tl.updateFinalizer) {
+        var tl = _getCachedTimeline.call(this, tlName, tld.toState, tld.fromState);
+        if (tl && tl.updateFinalizer) {
+            if (tl.updateFinalizer) {
                 tl.removeObserver(tl.updateFinalizer);
             }
         }
 
-        _saveObservers.call( this, tlName );
-        var tlKey = _makeTimelineKey.call( this, tlName );
+        _saveObservers.call(this, tlName);
+        var tlKey = _makeTimelineKey.call(this, tlName);
         this.timelineCache[tlKey] = null;
         this.timelineStateMap = {};
         this.fromStateCache = null;
@@ -5604,81 +6062,76 @@ jQuery.extend( jQuery.easing,
     }
 
     function _getBaseStateData() {
-        // Need to think about when to dirty this
-        if ( !this.baseState ) {
+        if (!this.baseState) {
             var state;
-            for ( state in this.states ) {
-                if ( this.states[state].baseState ) {
+            for (state in this.states) {
+                if (this.states[state].baseState) {
                     this.baseState = state;
-                    return _getStateData.call( this, this.baseState );
+                    return _getStateData.call(this, this.baseState);
                 }
             }
         } else {
-            return _getStateData.call( this, this.baseState );
+            return _getStateData.call(this, this.baseState);
         }
-        return _getStateData.call( this, this.defaultBaseState );
+        return _getStateData.call(this, this.defaultBaseState);
     }
 
-	function _getSymbolBaseStateOverrides() {
-		return this.symbolBaseStateOverrides;
+    function _getStateSelector(selector) {
+        if (typeof selector !== "string") {
+            return selector;
+        }
+
+        if (this.idLookup && this.idLookup[selector]) {
+            selector = "${_" + this.idLookup[selector] + "}";
+        }
+        else if (selector.search(/\$\{/) === -1) {
+            if (selector.search(/\#/) !== -1) {
+                var ele = this.$(selector);
+                if (ele && ele.get(0) && ele.get(0).id) {
+                    selector = ele.get(0).id;
+                }
+            }
+            selector = "${_" + selector + "}";
+        }
+        return selector;
     }
 
-	function _getStateSelector(selector) {
-		if (typeof selector !== "string")
-			return selector;
-	
-		if (this.idLookup && this.idLookup[selector]) {
-			selector = "${_" + this.idLookup[selector] + "}";
-		}
-		else if ( selector.search( /\$\{/ ) === -1 ) {
-			if (selector.search( /\#/) !== -1) {
-				var ele = this.$(selector);
-				if (ele && ele.get(0) && ele.get(0).id) {
-					selector = ele.get(0).id;
-				}
-			}
-			selector = "${_" + selector + "}";
-		}
-		return selector;
-	}
-
-    function _mergeBaseState( stateData ) {
-        var state = Edge.cloneJSONObject( _getBaseStateData.call( this ) );
-        for ( var selector in stateData ) {
-            if ( stateData.hasOwnProperty( selector ) ) {
-                if ( !state[selector] ) {
+    function _mergeBaseState(stateData) {
+        var state = Edge.cloneJSONObject(_getBaseStateData.call(this));
+        for (var selector in stateData) {
+            if (stateData.hasOwnProperty(selector)) {
+                if (!state[selector]) {
                     state[selector] = [];
                 }
-                state[selector] = state[selector].concat( stateData[selector] );
+                state[selector] = state[selector].concat(stateData[selector]);
             }
         }
         return state;
     }
 
-    _getCachedTimeline = function( timelineName, toState, fromState ) {
-        var tlKey = _makeTimelineKey.call( this, timelineName, toState, fromState );
+    function _getCachedTimeline(timelineName, toState, fromState) {
+        var tlKey = _makeTimelineKey.call(this, timelineName, toState, fromState);
         return this.timelineCache[tlKey];
-    };
-
+    }
 
 
     function efxUpdate(sym, timeline, data, bPost) {
         var timelineInfo = { timeline: timeline, data: data }, oCollector, fxInst, e, sel;
 
-        for ( sel in sym.effectors ) {
-            if ( sym.effectors.hasOwnProperty( sel ) ) {
-                e = sym.$( sel );
-                if ( e ) {
+        for (sel in sym.effectors) {
+            if (sym.effectors.hasOwnProperty(sel)) {
+                e = sym.$(sel);
+                if (e) {
                     oCollector = {};
-                    e.data( "efxCollector", oCollector );
+                    e.data("efxCollector", oCollector);
 
-                    fxInst = $( e ).data( "efxInst" );
-                    while ( fxInst ) {
-                        if ( !bPost ) {
-                            fxInst.effector.preRender( e[0], fxInst, oCollector, timelineInfo );
+                    fxInst = $(e).data("efxInst");
+                    while (fxInst) {
+                        if (!bPost) {
+                            fxInst.effector.preRender(e[0], fxInst, oCollector, timelineInfo);
                         }
                         else {
-                            fxInst.effector.postRender( e[0], fxInst, oCollector, timelineInfo );
+                            fxInst.effector.postRender(e[0], fxInst, oCollector, timelineInfo);
                         }
                         fxInst = fxInst.nextInst;
                     }
@@ -5688,412 +6141,415 @@ jQuery.extend( jQuery.easing,
     }
 
     // This function does not have to use .call
-    function _createTimelineFromData( arr ) {
-         var tl = Edge.Timeline.createTimeline();
+    function _createTimelineFromData(arr) {
+        var tl = Edge.Timeline.createTimeline();
 
         //add a listener to the timeline...
         var sym = this;
-        if(Edge.Effectors) {
+        if (Edge.Effectors) {
             tl.addObserver({
-                "preUpdate": function(timeline, data) {
+                "preUpdate": function (timeline, data) {
                     efxUpdate(sym, timeline, data, false);
                 },
-                "postUpdate": function(timeline, data) {
+                "postUpdate": function (timeline, data) {
                     efxUpdate(sym, timeline, data, true);
                 }
             });
         }
-        
-         var alen = arr.length;
-         for ( var i = 0; i < alen; i++ ) {
-             var d = arr[i];
-             var s = null;
-             if ( d.timeline ) {
-                 s = _createTimelineFromData.call( this, d.timeline );
-             }
-             else if ( d.tween ) {
-                 s = Edge.Timeline.createTween.apply( null, d.tween );
-             }
-             else if ( d.trigger ) {
-                 var args = d.trigger.slice( 0, 2 );
-                 args.push( this );
-                 s = Edge.Timeline.createTrigger.apply( null, args );
-             }
 
-             if ( s ) {
-                 tl.add( s, d.position, d.duration, d.easing, d.opts );
-             }
-         }
+        var alen = arr.length;
+        for (var i = 0; i < alen; i++) {
+            var d = arr[i];
+            var s = null;
+            if (d.timeline) {
+                s = _createTimelineFromData.call(this, d.timeline);
+            }
+            else if (d.tween) {
+                s = Edge.Timeline.createTween.apply(null, d.tween);
+            }
+            else if (d.trigger) {
+                var args = d.trigger.slice(0, 2);
+                args.push(this);
+                s = Edge.Timeline.createTrigger.apply(null, args);
+            }
 
-         return tl;
-     }
+            if (s) {
+                tl.add(s, d.position, d.duration, d.easing, d.opts);
+            }
+        }
 
-     _buildStateForCache = function( timelineName, stateName, opts ) {
-         var cache = {};
-         if ( !stateName ) {
-             return undefined;
-         }
-         var state = this.states[stateName];
-         if ( !state ) {
-             return;
-         }
-         var tdict = {};
-         var i;
-         var sel;
-         var o;
+        return tl;
+    }
 
-         if ( timelineName ) {
-             var tld = this.getTimelineData( timelineName ).timeline;
-             var cnt = tld.length;
+    function _buildStateForCache(timelineName, stateName, opts) {
+        var cache = {};
+        if (!stateName) {
+            return undefined;
+        }
+        var state = this.states[stateName];
+        if (!state) {
+            return;
+        }
+        var tdict = {};
+        var i;
+        var sel;
+        var o;
 
-             for ( i = 0; i < cnt; i++ ) {
-                 o = tld[i];
-                 if ( o.tween ) {
-                     sel = substituteVariables( o.tween[1], this.variableValues );
-                     var t = o.tween[0] + ":" + sel + ":" + o.tween[2];
-                     if ( !tdict[t] ) {
-                         tdict[t] = [];
-                     }
-                     tdict[t].push( o );
-                 }
-             }
-         }
-         for ( var r in state ) {
-             if ( r !== 'prototype' ) {
-                 var rule = state[r];
-                 for ( i = 0; i < rule.length; i++ ) {
-					var decl = rule[i];
-					if (r == "${symbolSelector}" && this._getBaseStateName() == stateName &&
-						this._symbolBaseStateHasOverride(decl[0], decl[1])) {
-						continue;
-					}
-                     sel = substituteVariables( r, this.variableValues );
-                     var key = decl[0] + ":" + sel + ":" + decl[1];
-                     if ( (decl[0] === 'style' || decl[0] === 'transform' || decl[0] === 'color' || decl[0] === 'subproperty' || decl[0] === 'gradient')/* && !tdict[key]*/ ) {
-                         if ( !cache[sel] ) {
-                             cache[sel] = [];
-                         }
-                         var value = decl[2];
-                         if ( decl[3] && decl[3].valueTemplate ) {
-                             var tokens = PropertyTween.prototype.parseTemplate.call( null, decl[3].valueTemplate );
+        if (timelineName) {
+            var tld = this.getTimelineData(timelineName).timeline;
+            var cnt = tld.length;
 
-                             if ( tokens ) {
-                                 var tlen = tokens.length;
-                                 var a = [];
-                                 var vals = decl[2];
-                                 if ( !$.isArray( vals ) ) {
-                                     vals = [vals];
-                                 }
-                                 for ( var j = 0; j < tlen; j++ ) {
-                                     o = tokens[j];
-                                     if ( o.isPlaceholder ) {
-                                         a.push( vals[o.value] );
-                                     }
-                                     else {
-                                         a.push( o.value );
-                                     }
-                                 }
+            for (i = 0; i < cnt; i++) {
+                o = tld[i];
+                if (o.tween) {
+                    sel = substituteVariables(o.tween[1], this.variableValues);
+                    var t = o.tween[0] + ":" + sel + ":" + o.tween[2];
+                    if (!tdict[t]) {
+                        tdict[t] = [];
+                    }
+                    tdict[t].push(o);
+                }
+            }
+        }
+        for (var r in state) {
+            if (r !== 'prototype') {
+                var rule = state[r];
+                for (i = 0; i < rule.length; i++) {
+                    var decl = rule[i];
+                    if (r == "${symbolSelector}" && this._getBaseStateName() == stateName &&
+                        this._symbolBaseStateHasOverride(decl[0], decl[1])) {
+                        continue;
+                    }
+                    sel = substituteVariables(r, this.variableValues);
+                    var key = decl[0] + ":" + sel + ":" + decl[1];
+                    if ((decl[0] === 'style' || decl[0] === 'transform' || decl[0] === 'color' || decl[0] === 'subproperty' || decl[0] === 'gradient')/* && !tdict[key]*/) {
+                        if (!cache[sel]) {
+                            cache[sel] = [];
+                        }
+                        var value = decl[2];
+                        if (decl[3] && decl[3].valueTemplate) {
+                            var tokens = PropertyTween.prototype.parseTemplate.call(null, decl[3].valueTemplate);
 
-                                 value = a.join( "" );
-                             }
-                             else {
-                                 value = decl[2].join( "" );
-                             }
-                         }
-                         cache[sel].push( {decl:decl, value:value} );
-                     }
-                 }
-             }
-         }
-         return cache;
-     };
+                            if (tokens) {
+                                var tlen = tokens.length;
+                                var a = [];
+                                var vals = decl[2];
+                                if (!$.isArray(vals)) {
+                                    vals = [vals];
+                                }
+                                for (var j = 0; j < tlen; j++) {
+                                    o = tokens[j];
+                                    if (o.isPlaceholder) {
+                                        a.push(vals[o.value]);
+                                    }
+                                    else {
+                                        a.push(o.value);
+                                    }
+                                }
 
-    function _ensureState( timelineName, stateType, opts ) {
-         // stateType is 'toState' or 'fromState' or 'initialState'
-         var cacheName = stateType + "Cache";
-         if ( !this[cacheName] ) {
-             this[cacheName] = {};
-         }
-         var rules = null;
-         if ( !this[cacheName][timelineName] ) {
-             var stateName = this.getTimelineData( timelineName )[stateType];
-             rules = _buildStateForCache.call( this, timelineName, stateName, opts );
-             // Can't cache states with parameterized actors
-             if ( !_isParameterizedActorTL.call( this, timelineName ) && !_isParameterizedActorState.call( this, stateName ) ) {
-                 this[cacheName][timelineName] = rules;
-             }
-         } else {
-             rules = this[cacheName][timelineName];
-         }
+                                value = a.join("");
+                            }
+                            else {
+                                value = decl[2].join("");
+                            }
+                        }
+                        cache[sel].push({decl: decl, value: value});
+                    }
+                }
+            }
+        }
+        return cache;
+    }
 
-         _applyRules.call(this, rules, opts ); // Maybe rules should be an object with apply method?
-     }
+    function _ensureState(timelineName, stateType, opts) {
+        // stateType is 'toState' or 'fromState' or 'initialState'
+        var cacheName = stateType + "Cache";
+        if (!this[cacheName]) {
+            this[cacheName] = {};
+        }
+        var rules = null;
+        if (!this[cacheName][timelineName]) {
+            var stateName = this.getTimelineData(timelineName)[stateType];
+            rules = _buildStateForCache.call(this, timelineName, stateName, opts);
+            // Can't cache states with parameterized actors
+            if (!_isParameterizedActorTL.call(this, timelineName) && !_isParameterizedActorState.call(this, stateName)) {
+                this[cacheName][timelineName] = rules;
+            }
+        } else {
+            rules = this[cacheName][timelineName];
+        }
 
-    _applyRules = function( rules, options ) {
-         var sym = this;
-         var transform;
-         var subprops;
+        _applyRules.call(this, rules, opts); // Maybe rules should be an object with apply method?
+    }
+
+    function _applyRules(rules, options) {
+        var sym = this;
+        var transform;
+        var subprops;
         var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
-         var _applyXformToEle = function() {
-             var $this = $( this );
-             var transformFull = {};
+        var _applyXformToEle = function () {
+            var $this = $(this);
+            var transformFull = {};
 
-             var data =  $.data( this, Edge.TransformTween.dataName);
-             data = data || Edge.TransformTween.prototype.buildTransformData.call( null, this );
-             $.extend( transformFull, data, transform );
+            var data = $.data(this, Edge.TransformTween.dataName);
+            data = data || Edge.TransformTween.prototype.buildTransformData.call(null, this);
+            $.extend(transformFull, data, transform);
 
-             $.data( this, Edge.TransformTween.dataName, transformFull );
-             var dontForceZ = false;
-             if ( options ) {
-                 dontForceZ = options.dontForceZ;
-             }
-             Edge.TransformTween.applyTransform( $this, transformFull, undefined, {dontForceZ: !sym.gpuAccelerate} );
-             var vis = $.data( this, 'ui_visibility' );
-             if ( vis ) {
-                 $this.css( 'visibility', vis );
-             }
-         };
-         var _applySubpropToEle = function() {
-             var $this = $( this );
-             var subpropFull = {};
+            $.data(this, Edge.TransformTween.dataName, transformFull);
+            var dontForceZ = false;
+            if (options) {
+                dontForceZ = options.dontForceZ;
+            }
+            Edge.TransformTween.applyTransform($this, transformFull, undefined, {dontForceZ: !sym.gpuAccelerate});
+            var vis = $.data(this, 'ui_visibility');
+            if (vis) {
+                $this.css('visibility', vis);
+            }
+        };
+        var _applySubpropToEle = function () {
+            var $this = $(this);
+            var subpropFull = {};
 
-             var data =  Edge.SubpropertyTween.prototype.buildDefaultProps.call( null, this, subprops );
+            var data = Edge.SubpropertyTween.prototype.buildDefaultProps.call(null, this, subprops);
 
-             $.extend( subpropFull, data );
-             for (var prop in subprops) {
-                 if (subprops.hasOwnProperty(prop)) {
-                     if(subpropFull[prop]){
-                         $.extend(subpropFull[prop], subprops[prop]);
-                     } else {
-                         subpropFull[prop] = subprops[prop];
-                     }
-                 }
-             }
+            $.extend(subpropFull, data);
+            for (var prop in subprops) {
+                if (subprops.hasOwnProperty(prop)) {
+                    if (subpropFull[prop]) {
+                        $.extend(subpropFull[prop], subprops[prop]);
+                    } else {
+                        subpropFull[prop] = subprops[prop];
+                    }
+                }
+            }
 
-             for (var prop in subprops) {
-                 if (subprops.hasOwnProperty(prop)) {
-                     $.data( this, prop, subpropFull[prop] );
-                     Edge.SubpropertyTween.applySubproperty( $this, subpropFull[prop], undefined, {} );
-                 }
-             }
-         };
+            for (var prop in subprops) {
+                if (subprops.hasOwnProperty(prop)) {
+                    $.data(this, prop, subpropFull[prop]);
+                    Edge.SubpropertyTween.applySubproperty($this, subpropFull[prop], undefined, {});
+                }
+            }
+        };
 
-         for ( var sel in rules ) {
-             if ( rules.hasOwnProperty( sel ) ) {
-                 var rule = rules[sel];
-                 var cnt = rule.length;
-                 transform = null;
-                 subprops = null;
-                 for ( var i = 0; i < cnt; i++ ) {
-                     var decl = rule[i].decl;
-                     var prop = decl[1];
-                     if ( decl[0] === "transform" ) {
-                         if ( !transform ) {
-                             transform = {};
-                         }
-                         transform[prop] = rule[i].value;
-                     }
-                     else if (decl[0] === "subproperty" ) {
-                         if ( !subprops ) {
+        for (var sel in rules) {
+            if (rules.hasOwnProperty(sel)) {
+                var rule = rules[sel];
+                var cnt = rule.length;
+                transform = null;
+                subprops = null;
+                for (var i = 0; i < cnt; i++) {
+                    var decl = rule[i].decl;
+                    var prop = decl[1];
+                    if (decl[0] === "transform") {
+                        if (!transform) {
+                            transform = {};
+                        }
+                        transform[prop] = rule[i].value;
+                    }
+                    else if (decl[0] === "subproperty") {
+                        if (!subprops) {
                             subprops = {};
-                         }
-                         var superProp = Edge.SubpropertyTween.getStyle(prop);
-                         if ( !subprops[superProp] ) {
+                        }
+                        var superProp = Edge.SubpropertyTween.getStyle(prop);
+                        if (!subprops[superProp]) {
                             subprops[superProp] = {};
-                         }
-                         // get super property for prop and create sub-array
-                         subprops[superProp][prop] = rule[i].value;
-                     }
-                     else {
-                         decl = rule[i].decl;
-                         var value = rule[i].value;
-                         if(decl[0] === "color") {
-                             value = Edge.colorToSupported(value);
-                         }
-                         if(decl[0] === "gradient") {
+                        }
+                        // get super property for prop and create sub-array
+                        subprops[superProp][prop] = rule[i].value;
+                    }
+                    else {
+                        decl = rule[i].decl;
+                        var value = rule[i].value;
+                        if (decl[0] === "color") {
+                            value = Edge.colorToSupported(value);
+                        }
+                        if (decl[0] === "gradient") {
                             var parsedValue = Edge.Gradient.parseValue(value);
                             value = Edge.formatGradient(parsedValue, true);
-                            $( sel ).css( prop, "-webkit-" + value );
-                            $( sel ).css( prop, "-moz-" + value );
-                            $( sel ).css( prop, "-ms-" + value );
-                            $( sel ).css( prop, "-o-" + value );
+                            $(sel).css(prop, "-webkit-" + value);
+                            $(sel).css(prop, "-moz-" + value);
+                            $(sel).css(prop, "-ms-" + value);
+                            $(sel).css(prop, "-o-" + value);
                             value = Edge.formatGradient(parsedValue, false);
-                            $( sel ).css( prop, value );
+                            $(sel).css(prop, value);
                             Edge.forceGPU(sel);
-                         }
-                         else {
-                            $( sel ).css( prop, value );
-                         }
-                         if( isWebkit && prop === 'background-size' ) {
-                             $( sel ).css('-webkit-background-size', value);
-                     }
-                 }
-                 }
-                 if ( transform && Edge.TransformTween ) {
-                     $( sel ).each( _applyXformToEle );
-                 }
-                 if ( subprops && Edge.SubpropertyTween ) {
-                     $( sel ).each( _applySubpropToEle );
-                 }
-             }
-         }
-     };
-
-     function _ensureFromState( timelineName, opts ) {
-         _ensureState.call( this, timelineName, 'fromState', opts );
-     }
-
-    function  _ensureToState( timelineName, opts ) {
-         _ensureState.call( this, timelineName, 'toState', opts );
-     }
-
-    function _seek( timelineName, pos, opts ) {
-         var isCacheDirty = _isCacheDirty.call( this, timelineName );
-         var tld = this.getTimelineData( timelineName );
-         if ( !tld ) {
-             return;
-         }
-         var toState = tld.toState;
-         
-         // If a timeline reference was passed in or found by statename lookup, create a timeline
-         // and seek it.
-         var oldState = tld.fromState; // Force a start state if the timeline has one
-         if ( !opts ) {
-             opts = {};
-         }
-
-         if ( !isCacheDirty && opts.skipFromState ) {
-             opts.assumeStateUnchanged = true;      // Tell the timeline that we haven't messed with it, so it can optimize
-         } else {
-             _ensureFromState.call( this, timelineName, opts );
-             opts.assumeStateUnchanged = false;
-         }
-         
-         var duration = 0;
-         if ( timelineName ) {
-             
-             var tl = this._getTimeline( timelineName, toState, oldState );
-             if ( tl ) {
-                 duration = tl.getDuration();
-    
-                 tl.seek( pos, opts );
-             }
-             
-         }
-
-     }
-     function _rememberBaseStateForTimeline( tlname ) {
-         if ( tlname ) {
-             var tlData = this.getTimelineData( tlname );
-             if ( !tlData ) {
-                 return;
-             }
-             var tld = tlData.timeline;
-             var cnt = tld.length;
-
-             for ( var i = 0; i < cnt; i++ ) {
-                 var o = tld[i];
-                 if ( o.tween ) {
-                     var sel = substituteVariables( o.tween[1], this.variableValues );
-                     _rememberBaseState.call( this, sel );
-                 }
-             }
-         }
-     }
-
-
-    _rememberBaseState = function( ele ) {
-        var $ele = $( ele );
-        $ele.each( function() {
-            var data = $.data( this, baseDataName );
-            if ( !data ) {
-                data = {};
-                $.data( this, baseDataName, data );
-                data.transformData = Edge.TransformTween.prototype.buildTransformData.call( null, this );
+                        }
+                        else {
+                            $(sel).css(prop, value);
+                        }
+                        if (isWebkit && prop === 'background-size') {
+                            $(sel).css('-webkit-background-size', value);
+                        }
+                    }
+                }
+                if (transform && Edge.TransformTween) {
+                    $(sel).each(_applyXformToEle);
+                }
+                if (subprops && Edge.SubpropertyTween) {
+                    $(sel).each(_applySubpropToEle);
+                }
             }
-        } );
-    };
+        }
+    }
 
-    _isParameterizedActorTL = function( timelineName ) {
-        var tld = this.getTimelineData( timelineName ).timeline;
+    function _ensureFromState(timelineName, opts) {
+        _ensureState.call(this, timelineName, 'fromState', opts);
+    }
+
+    function _ensureToState(timelineName, opts) {
+        _ensureState.call(this, timelineName, 'toState', opts);
+    }
+
+    function _seek(timelineName, pos, opts) {
+        var isCacheDirty = _isCacheDirty.call(this, timelineName);
+        var tld = this.getTimelineData(timelineName);
+        if (!tld) {
+            return;
+        }
+        var toState = tld.toState;
+
+        // If a timeline reference was passed in or found by statename lookup, create a timeline
+        // and seek it.
+        var oldState = tld.fromState; // Force a start state if the timeline has one
+        if (!opts) {
+            opts = {};
+        }
+
+        if (!isCacheDirty && opts.skipFromState) {
+            opts.assumeStateUnchanged = true;      // Tell the timeline that we haven't messed with it, so it can optimize
+        } else {
+            //used at authoring time
+            if (opts.ensureFromState) {
+                _ensureFromState.call(this, timelineName, opts);
+            }
+            opts.assumeStateUnchanged = false;
+        }
+
+        var duration = 0;
+        if (timelineName) {
+
+            var tl = this._getTimeline(timelineName, toState, oldState);
+            if (tl) {
+                duration = tl.getDuration();
+
+                tl.seek(pos, opts);
+            }
+        }
+    }
+
+    function _rememberBaseStateForTimeline(tlname) {
+        if (tlname) {
+            var tlData = this.getTimelineData(tlname);
+            if (!tlData) {
+                return;
+            }
+            var tld = tlData.timeline;
+            var cnt = tld.length;
+
+            for (var i = 0; i < cnt; i++) {
+                var o = tld[i];
+                if (o.tween) {
+                    var sel = substituteVariables(o.tween[1], this.variableValues);
+                    _rememberBaseState.call(this, sel);
+                }
+            }
+        }
+    }
+
+
+    function _rememberBaseState(ele) {
+        var $ele = $(ele);
+        $ele.each(function () {
+            var data = $.data(this, baseDataName);
+            if (!data) {
+                data = {};
+                $.data(this, baseDataName, data);
+                data.transformData = Edge.TransformTween.prototype.buildTransformData.call(null, this);
+            }
+        });
+    }
+
+    function _isParameterizedActorTL(timelineName) {
+        var tld = this.getTimelineData(timelineName).timeline;
         var cnt = tld.length;
-        for ( var i = 0; i < cnt; i++ ) {
+        for (var i = 0; i < cnt; i++) {
             var o = tld[i];
-            if ( o.tween ) {
-                if ( typeof o.tween[1] === "string" ) {
-                    if ( o.tween[1].search( /\$\{/ ) !== -1 ) {
+            if (o.tween) {
+                if (typeof o.tween[1] === "string") {
+                    if (o.tween[1].search(/\$\{/) !== -1) {
                         return true;
                     }
                 }
             }
         }
         return false;
-    };
+    }
 
-    _isParameterizedActorState = function ( stateName ) {
-        if ( !stateName ) {
+    function _isParameterizedActorState(stateName) {
+        if (!stateName) {
             return false;
         }
         var state = this.states[stateName];
-        if ( !state ) {
+        if (!state) {
             return false;
         }
-        for ( var sel in state ) {
-            if ( state.hasOwnProperty( sel ) ) {
-                if ( sel.search( /\$\{/ ) !== -1 ) {
+        for (var sel in state) {
+            if (state.hasOwnProperty(sel)) {
+                if (sel.search(/\$\{/) !== -1) {
                     return true;
                 }
             }
         }
         return false;
-    };
+    }
 
-    function _notifyVariableBindings( varName ) {
-        if ( !varName ) {
+    function _notifyVariableBindings(varName) {
+        if (!varName) {
             return;
         }
         // process bindings
-        var value = this.getVariable( varName );
-        var evt = _createEvent.call( this, {variableValue:value} );
-        this.notifyObservers( "variableChanged:" + varName, evt );
+        var value = this.getVariable(varName);
+        var evt = _createEvent.call(this, {variableValue: value});
+        this.notifyObservers("variableChanged:" + varName, evt);
     }
 
-    function _isReverse( opts ) {
+    function _isReverse(opts) {
         return typeof(opts) === 'object' && typeof(opts.playDirection) === 'string' && opts.playDirection === 'reverse';
     }
-                            
+
     // Use extend to define public api
-    $.extend( Symbol.prototype, Edge.Notifier.prototype, {
+    // Things with _ are considered private
+    $.extend(Symbol.prototype, Edge.Notifier.prototype, {
         constructor: Symbol,
 
-        _init: function( ele, opts ) { // ele must be a single element - ok to be a $ of length 1
-			var i;
-			if ( opts ) {
-                $.extend( this.options, opts );
-                if ( $.isArray( opts.observers ) && opts.observers.length ) {
+        _init: function (ele, opts) { // ele must be a single element - ok to be a $ of length 1
+            var i;
+            if (opts) {
+                $.extend(this.options, opts);
+                if ($.isArray(opts.observers) && opts.observers.length) {
                     var obsLen = opts.observers.length;
-                    for ( i = 0; i < obsLen; i++ ) {
-                        this.addObserver( opts.observers[i] );
+                    for (i = 0; i < obsLen; i++) {
+                        this.addObserver(opts.observers[i]);
                     }
                 }
             }
-            if ( !this.options.data ) {
+            if (!this.options.data) {
                 return null;
             }
             this.element = ele;
             this.composition = this.options.composition;
 
             var evt = _createEvent.call(this);
-            this.notifyObservers( "onPreSymbolInit", evt );
+            this.notifyObservers("onPreSymbolInit", evt);
             var postEvt = _createEvent.call(this);
-            if ( !evt.performDefaultAction ) {
-                this.notifyObservers( "onPostSymbolInit", postEvt );
+            if (!evt.performDefaultAction) {
+                this.notifyObservers("onPostSymbolInit", postEvt);
                 return;
             }
 
-            var $ele = $( ele );
-            setSymbol( ele[0], this );
-            if ( !$ele[0].id ) {
+            var $ele = $(ele);
+            setSymbol(ele[0], this);
+            if (!$ele[0].id) {
                 $ele[0].id = Symbol._makeUniqueID();
             }
 
@@ -6101,131 +6557,131 @@ jQuery.extend( jQuery.easing,
 
             var data = this.options.data;
             this.variableValues = _makeDefaultVariables.call(this);
-            $.extend( this.variableValues, this.options.variables );
+            $.extend(this.variableValues, this.options.variables);
             if (this.options.opts) {
-                $.extend( this.variableValues, this.options.opts.variables );
+                $.extend(this.variableValues, this.options.opts.variables);
             }
 
             var symVars = _getSymbolVars.call(this);
-            this.setVariable( "_Stage", symVars.symbolSelector );
-            this.setVariable( "_stage", symVars.symbolSelector );
-            this.setVariable( "_" + $ele[0].id, symVars.symbolSelector );
+            this.setVariable("_Stage", symVars.symbolSelector);
+            this.setVariable("_stage", symVars.symbolSelector);
+            this.setVariable("_" + $ele[0].id, symVars.symbolSelector);
 
-            $ele.find( '*' ).each( function( i, e ) {
-                if ( e.id ) {
-                    symbol.setVariable( "_" + e.id, "#" + e.id );
+            $ele.find('*').each(function (i, e) {
+                if (e.id) {
+                    symbol.setVariable("_" + e.id, "#" + e.id);
                 }
-            } );
-            
+            });
+
             this.symbolBaseStateOverrides = this.options.opts.symbolBaseState;
-            
-            if ( data.content ) {
+
+            if (data.content) {
                 _injectMarkup.call(this);
             }
-            if ( data.actions ) {
-                _addActionsFromData.call( this, data.actions );
+            if (data.actions) {
+                _addActionsFromData.call(this, data.actions);
             }
             if (data.effectors) {
                 this.effectors = {};
                 for (var sFx in data.effectors) {
-                    if(data.effectors.hasOwnProperty(sFx)) {
-                        this.effectors[substituteVariables( sFx, this.variableValues )] = data.effectors[sFx];
+                    if (data.effectors.hasOwnProperty(sFx)) {
+                        this.effectors[substituteVariables(sFx, this.variableValues)] = data.effectors[sFx];
                     }
                 }
             }
-            if ( data.timelines ) {
-                _createTimelineSetFromData.call( this, data.timelines, data.states );
+            if (data.timelines) {
+                _createTimelineSetFromData.call(this, data.timelines, data.states);
             }
-            if ( data.bindings && data.bindings.length ) {
-                _addBindingsFromData.call( this, data.bindings );
+            if (data.bindings && data.bindings.length) {
+                _addBindingsFromData.call(this, data.bindings);
             }
 
-            if ( typeof this.options.opts.autoPlay === 'object' ) {
+            if (typeof this.options.opts.autoPlay === 'object') {
                 var tlName;
-                for ( tlName in this.options.opts.autoPlay ) {
-                    if ( this.options.opts.autoPlay.hasOwnProperty( tlName ) ) {
-                        this.setAutoPlay( this.options.opts.autoPlay[tlName], tlName );
+                for (tlName in this.options.opts.autoPlay) {
+                    if (this.options.opts.autoPlay.hasOwnProperty(tlName)) {
+                        this.setAutoPlay(this.options.opts.autoPlay[tlName], tlName);
                     }
                 }
             }
 
             var e = $ele[0];
-            
+
             var isBody = e.nodeName === "BODY";
             this.stageIsBody = isBody;
-            if ( data.content && data.content.dom && !isBody ) {
-                var position = $ele.css( 'position' );
-                if ( position !== 'absolute' && position !== 'relative' ) {
-                    $ele.css( 'position', 'relative' );
+            if (data.content && data.content.dom && !isBody) {
+                var position = $ele.css('position');
+                if (position !== 'absolute' && position !== 'relative') {
+                    $ele.css('position', 'relative');
                 }
             }
 
             this.gpuAccelerate = data.gpuAccelerate;
-            if ( typeof(this.gpuAccelerate) === "undefined" ) {
+            if (typeof(this.gpuAccelerate) === "undefined") {
                 this.gpuAccelerate = true;
             }
             this.gpuAccelerate = this.gpuAccelerate && Edge.supported.cssTransform3d;
-            
+
             var ua = navigator.userAgent;
             var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
-            if(/Macintosh/.test(ua) || (isWebkit && /Windows NT/.test(ua)) ) {
+            if (/Macintosh/.test(ua) || (isWebkit && /Windows NT/.test(ua))) {
                 this.gpuAccelerate = false; // Just too many bugs in desktop Chrome
             }
-            if(/Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome/.test(ua) && /Version\/5\.1/.test(ua))  {
+            if (/Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome/.test(ua) && /Version\/5\.1/.test(ua)) {
                 // bug 3302919 - positioning won't update if also transformed unless you turn on gpu for Safari 5.1
                 this.gpuAccelerate = true;
             }
-            
+
             var matches = /Version\/(\d+)/.exec(ua);
-            if(/Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome/.test(ua)  )  {
+            if (/Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome/.test(ua)) {
                 // bug 3327444 - bad rendering on some machines (retina only?) with safari 6
                 if (matches && matches.length > 1 && matches[1]) {
                     if (parseInt(matches[1], 10) >= 6) {
-                this.gpuAccelerate = true;
-            }
+                        this.gpuAccelerate = true;
+                    }
                 }
             }
-            
+
             matches = /Chrome\/(\d+)/.exec(ua);
-            if(matches && matches.length > 1 && matches[1])  {
+            if (matches && matches.length > 1 && matches[1]) {
                 // bug 3328175 - bad rendering on Chrome 21
-                if(parseInt(matches[1], 10) >= 21) {
-                this.gpuAccelerate = true;
+                if (parseInt(matches[1], 10) >= 21) {
+                    this.gpuAccelerate = true;
+                }
             }
-            }
-            if(isWebkit && (/iPad/.test(ua) || /iPod/.test(ua) || /iPhone/.test(ua) ))  {
+            if (isWebkit && (/iPad/.test(ua) || /iPod/.test(ua) || /iPhone/.test(ua) )) {
                 // bug 3312000 - positioning won't update if also transformed unless you turn on gpu for Safari 5.1
-                // We don't have anewer version yet, so we won't check version number
                 // This also prevents crashing when you change left in % on one element while transforming others
                 this.gpuAccelerate = true;
             }
 
             // now calling _goToInitialState in coordination with callReadyList
-            if(this.getComposition().compReadyCalled) {
+            if (this.getComposition().compReadyCalled || window.edge_authoring_mode) {
                 _goToInitialState.call(this);
             }
 
             var wkt = $ele[0].style.webkitTransform;
-            if ( this.gpuAccelerate && $ele[0].style && (typeof(wkt) === "undefined" || wkt === "" || wkt === "none") ) {   
-                $ele[0].style.webkitTransform = "translateZ(0)";
-            }
-            else if(!$ele[0].style.zIndex && window.edge_authoring_mode) {
+            if (this.gpuAccelerate && $ele[0].style && (typeof(wkt) === "undefined" || wkt === "" || wkt === "none")) {
+                if (!window.edge_authoring_mode || $ele[0].nodeName !== "BODY") {
+                    $ele[0].style.webkitTransform = "translateZ(0)";
+                }
+            } else if (!$ele[0].style.zIndex && window.edge_authoring_mode) {
                 $ele[0].style.zIndex = 0;
             }
-            
-            this.notifyObservers( "onPostSymbolInit", postEvt );
-            this.notifyObservers( "creationComplete", postEvt );
+
+            this.notifyObservers("onPostSymbolInit", postEvt);
+            this.notifyObservers("creationComplete", postEvt);
 
             return this;
         },
 
-       _flushCache : function() {
-           
+        _flushCache: function () {
+
             var tld = this.timelines;
             var tlName;
-            for ( tlName in tld ) {
-                if ( tld.hasOwnProperty( tlName ) ) {
-                    _dirtyTimeline.call( this, tlName );
+            for (tlName in tld) {
+                if (tld.hasOwnProperty(tlName)) {
+                    _dirtyTimeline.call(this, tlName);
                 }
             }
         },
@@ -6238,10 +6694,10 @@ jQuery.extend( jQuery.easing,
          @param pos Position to start, in Ms or label. Defaults to current position if null or undefined
          @param executeTriggers Whether to fire triggers on first update; true to always fire, false for never, and null or undefined for auto
          **/
-        play: function( pos, executeTriggers, options ) {
+        play: function (pos, executeTriggers, options) {
             var tlName = _getDefltTL.call(this);
-            _stop.call( this, tlName, { dontNotify : true } );
-            return this.playTimeline( tlName, pos, executeTriggers, options );
+            _stop.call(this, tlName, { dontNotify: true });
+            return this.playTimeline(tlName, pos, executeTriggers, options);
         },
         /**
          Play a timeline from the position, or optionally, the current pos.
@@ -6252,39 +6708,39 @@ jQuery.extend( jQuery.easing,
          @param pos Position to start, in Ms or label. Defaults to current position if null or undefined
          @param options Play options
          **/
-        playTimeline: function( tlName, pos, executeTriggers, options ) {
+        playTimeline: function (tlName, pos, executeTriggers, options) {
             var sym = this;
-            var o = _preNotify.call( sym, "onPreSymbolPlay", tlName, options );
-            if ( typeof(o) === undefined ) {
+            var o = _preNotify.call(sym, "onPreSymbolPlay", tlName, options);
+            if (typeof(o) === undefined) {
                 return;
             }
 
-            pos = _posToNum.call( this, tlName, pos );
+            pos = _posToNum.call(this, tlName, pos);
 
             var opts;
-            if ( typeof tlName === 'string' ) {
-                if ( sym.timelines ) {
-                    var tl = _getTimelineWithOwnStates.call(sym, tlName );
-                    if ( tl ) {
-                        if(typeof pos === "undefined" || pos === null){
-                            if(tl.getCurrentPosition() >= tl.getDuration()){
+            if (typeof tlName === 'string') {
+                if (sym.timelines) {
+                    var tl = _getTimelineWithOwnStates.call(sym, tlName);
+                    if (tl) {
+                        if (typeof pos === "undefined" || pos === null) {
+                            if (tl.getCurrentPosition() < 0 || tl.getCurrentPosition() >= tl.getDuration()) {
                                 pos = 0;
                             }
                         }
-                        _rememberBaseStateForTimeline.call( sym, tlName );
+                        _rememberBaseStateForTimeline.call(sym, tlName);
 
                         opts = options || {};
                         $.extend(opts, { variables: sym.variableValues, startPos: pos});
                         opts.executeTriggers = executeTriggers;
-                        $.extend( opts, o );
+                        $.extend(opts, o);
                         tl.currentDirection = "forward";
                     }
-                    sym._play( tlName, opts );
+                    sym._play(tlName, opts);
                 }
             }
 
-            var postEvt = _createEvent.call( sym, { timeline: tlName, tlOptions: opts } );
-            sym.notifyObservers( "onPostSymbolPlay", postEvt );
+            var postEvt = _createEvent.call(sym, { timeline: tlName, tlOptions: opts });
+            sym.notifyObservers("onPostSymbolPlay", postEvt);
 
             return this;
         },
@@ -6298,8 +6754,8 @@ jQuery.extend( jQuery.easing,
          @param executeTriggers Whether to fire triggers on first update; true to always fire, false for never, and null or undefined for auto
 
          **/
-        playReverse: function( pos, executeTriggers, opts ) {
-            return this.playTimelineReverse( _getDefltTL.call(this), pos, executeTriggers, opts );
+        playReverse: function (pos, executeTriggers, opts) {
+            return this.playTimelineReverse(_getDefltTL.call(this), pos, executeTriggers, opts);
         },
         /**
          Play a timeline in reverse from the a position.
@@ -6308,37 +6764,37 @@ jQuery.extend( jQuery.easing,
          @function
          @param tlName Timeline to play
          **/
-        playTimelineReverse: function( tlName, pos, executeTriggers, options ) {
+        playTimelineReverse: function (tlName, pos, executeTriggers, options) {
             var sym = this;
-            var o = _preNotify.call( sym, "onPreSymbolPlayReverse", tlName, options );
-            if ( typeof(o) === undefined ) {
+            var o = _preNotify.call(sym, "onPreSymbolPlayReverse", tlName, options);
+            if (typeof(o) === undefined) {
                 return;
             }
 
             options = options || {};
             Symbol.startClock();
             options.externalClock = true;
-            pos = _posToNum.call( sym, tlName, pos );
+            pos = _posToNum.call(sym, tlName, pos);
 
-            if ( typeof(tlName) === 'string' ) {
-                var tl = _getTimelineWithOwnStates.call( sym, tlName );
+            if (typeof(tlName) === 'string') {
+                var tl = _getTimelineWithOwnStates.call(sym, tlName);
 
-                if ( typeof pos === "undefined" || pos === null ) {
+                if (typeof pos === "undefined" || pos === null) {
                     pos = tl.currentPosition;
-                    if ( pos === 0 ) {
+                    if (pos === 0) {
                         pos = tl.getDuration();
                     }
                 }
-                var opts = { variables: sym.variableValues, playDirection: 'reverse', startPos:pos };
-                $.extend( opts, o );
+                var opts = { variables: sym.variableValues, playDirection: 'reverse', startPos: pos };
+                $.extend(opts, o);
                 opts.executeTriggers = executeTriggers;
 
                 tl.currentDirection = "reverse";
-                tl.play( opts );
+                tl.play(opts);
             }
 
-            var postEvt = _createEvent(sym, { timeline: tlName, tlOptions: o } );
-            sym.notifyObservers( "onPostSymbolPlayReverse", postEvt );
+            var postEvt = _createEvent(sym, { timeline: tlName, tlOptions: o });
+            sym.notifyObservers("onPostSymbolPlayReverse", postEvt);
             return this;
         },
 
@@ -6351,8 +6807,8 @@ jQuery.extend( jQuery.easing,
          @param pos Position to seek, in milliseconds
          @return - null
          **/
-        seek: function( pos, options ) {
-            return this.seekTimeline( _getDefltTL.call(this), pos, options );
+        seek: function (pos, options) {
+            return this.seekTimeline(_getDefltTL.call(this), pos, options);
         },
         /**
          Seek a timeline to a position.
@@ -6363,26 +6819,26 @@ jQuery.extend( jQuery.easing,
          @param pos Position to seek, in milliseconds
          @return - null
          **/
-        seekTimeline: function( tlName, pos, options ) {
-            var o = _preNotify.call(this,  "onPreSymbolSeek", tlName, options );
-            if ( typeof(o) === undefined ) {
+        seekTimeline: function (tlName, pos, options) {
+            var o = _preNotify.call(this, "onPreSymbolSeek", tlName, options);
+            if (typeof(o) === undefined) {
                 return null;
             }
 
-            pos = _posToNum.call( this, tlName, pos );
+            pos = _posToNum.call(this, tlName, pos);
 
-            if ( typeof tlName === 'string' ) {
-                _rememberBaseStateForTimeline.call( this, tlName );
+            if (typeof tlName === 'string') {
+                _rememberBaseStateForTimeline.call(this, tlName);
                 var opts = {variables: this.variableValues };
-                $.extend( opts, o );
-                if ( this.timelines ) {
+                $.extend(opts, o);
+                if (this.timelines) {
                     // _seek can handle undefined pos
-                    _seek.call( this, tlName, pos, opts );
+                    _seek.call(this, tlName, pos, opts);
 
                 }
             }
-            var postEvt = _createEvent.call(this, { timeline: tlName, tlOptions: o } );
-            this.notifyObservers( "onPostSymbolSeek", postEvt );
+            var postEvt = _createEvent.call(this, { timeline: tlName, tlOptions: o });
+            this.notifyObservers("onPostSymbolSeek", postEvt);
 
             return null;
         },
@@ -6394,8 +6850,8 @@ jQuery.extend( jQuery.easing,
          @function
          @return - null
          **/
-        stop: function( pos, options ) {
-            return this.stopTimeline( _getDefltTL.call(this), pos, options );
+        stop: function (pos, options) {
+            return this.stopTimeline(_getDefltTL.call(this), pos, options);
         },
         /**
          Stop a timeline at its current position.
@@ -6405,25 +6861,25 @@ jQuery.extend( jQuery.easing,
          @param tlName Timeline to stop
          @return - null
          **/
-        stopTimeline: function( tlName, pos, options ) {
+        stopTimeline: function (tlName, pos, options) {
             var sym = this;
-            var o = _preNotify.call( sym, "onPreSymbolStop", tlName, options );
-            if ( typeof(o) === undefined ) {
+            var o = _preNotify.call(sym, "onPreSymbolStop", tlName, options);
+            if (typeof(o) === undefined) {
                 return null;
             }
 
-            if ( typeof tlName === 'string' ) {
+            if (typeof tlName === 'string') {
                 var opts = {variables: sym.variableValues };
-                $.extend( opts, o );
-                if ( sym.timelines ) {
-                    if ( typeof pos === "undefined" ) {
-                        _stop.call( this, tlName );
+                $.extend(opts, o);
+                if (sym.timelines) {
+                    if (typeof pos === "undefined") {
+                        _stop.call(this, tlName);
                     }
                     else {
-                        if ( typeof pos === "string" ) {
-                            pos = _posToNum.call( sym, tlName, pos );
+                        if (typeof pos === "string") {
+                            pos = _posToNum.call(sym, tlName, pos);
                         }
-                        _seek.call( sym, tlName, pos, opts );
+                        _seek.call(sym, tlName, pos, opts);
                     }
                 }
             }
@@ -6435,8 +6891,8 @@ jQuery.extend( jQuery.easing,
          @function
          @return The current playhead position of the default timeline, undefined if there is no default timeline.
          */
-        getPosition: function() {
-            return this.getTimelinePosition( _getDefltTL.call(this) );
+        getPosition: function () {
+            return this.getTimelinePosition(_getDefltTL.call(this));
         },
         /**
          Get the  playhead position for the specified timeline
@@ -6446,12 +6902,12 @@ jQuery.extend( jQuery.easing,
          @param tlName Name of the timeline to be queried
          @return The current playhead position of the specified timeline, undefined if there is no default timeline.
          */
-        getTimelinePosition: function( tlName ) {
-            if ( typeof tlName !== "string" ) {
+        getTimelinePosition: function (tlName) {
+            if (typeof tlName !== "string") {
                 return undefined;
             }
-            var tl = _getTimelineWithOwnStates.call( this, tlName );
-            if ( tl ) {
+            var tl = _getTimelineWithOwnStates.call(this, tlName);
+            if (tl) {
                 return tl.getCurrentPosition();
             }
 
@@ -6464,8 +6920,8 @@ jQuery.extend( jQuery.easing,
          @function
          @return The duration of the default timeline, undefined if there is no default timeline.
          */
-        getDuration: function() {
-            return this.getTimelineDuration( _getDefltTL.call(this) );
+        getDuration: function () {
+            return this.getTimelineDuration(_getDefltTL.call(this));
         },
         /**
          Get the duration of the specified timeline
@@ -6475,13 +6931,13 @@ jQuery.extend( jQuery.easing,
          @param tlName Name of the timeline to be queried
          @return The duration of the specified timeline, undefined if there is no default timeline.
          */
-        getTimelineDuration: function( tlName ) {
-            if ( typeof tlName !== "string" ) {
+        getTimelineDuration: function (tlName) {
+            if (typeof tlName !== "string") {
                 return undefined;
             }
-            var tl = _getTimelineWithOwnStates.call( this, tlName );
-            if ( tl ) {
-                return tl.getDuration();
+            var tl = _getTimelineWithOwnStates.call(this, tlName);
+            if (tl) {
+                return Math.round(tl.getDuration());
             }
 
             return undefined;
@@ -6493,8 +6949,8 @@ jQuery.extend( jQuery.easing,
          @function
          @return Whether the default timeline is playing.
          */
-        isPlaying: function() {
-            return this.isTimelinePlaying( _getDefltTL.call(this) );
+        isPlaying: function () {
+            return this.isTimelinePlaying(_getDefltTL.call(this));
         },
         /**
          Determine whether the specified timeline is playing
@@ -6504,12 +6960,12 @@ jQuery.extend( jQuery.easing,
          @param tlName Name of the timeline to be queried
          @return Whether the specified timeline is playing
          */
-        isTimelinePlaying: function( tlName ) {
-            if ( typeof tlName !== "string" ) {
+        isTimelinePlaying: function (tlName) {
+            if (typeof tlName !== "string") {
                 return undefined;
             }
-            var tl = _getTimelineWithOwnStates.call( this, tlName );
-            if ( !tl.playing ) {
+            var tl = _getTimelineWithOwnStates.call(this, tlName);
+            if (!tl.playing) {
                 return false;
             }
             return true;
@@ -6521,8 +6977,8 @@ jQuery.extend( jQuery.easing,
          @function
          @return Whether the default timeline play direction is reverse.
          */
-        isPlayDirectionReverse: function() {
-            return this.isTimelinePlayDirectionReverse( _getDefltTL.call(this) );
+        isPlayDirectionReverse: function () {
+            return this.isTimelinePlayDirectionReverse(_getDefltTL.call(this));
         },
         /**
          Determine whether the specified timeline is being used with play direction is reverse
@@ -6532,20 +6988,20 @@ jQuery.extend( jQuery.easing,
          @param tlName Name of the timeline to be queried
          @return Whether the default timeline play direction is reverse.
          */
-        isTimelinePlayDirectionReverse: function( tlName ) {
-            if ( typeof tlName !== "string" ) {
+        isTimelinePlayDirectionReverse: function (tlName) {
+            if (typeof tlName !== "string") {
                 return undefined;
             }
-            var tl = _getTimelineWithOwnStates.call( this, tlName );
+            var tl = _getTimelineWithOwnStates.call(this, tlName);
 
-            if ( tl.currentContext ) {
-                if ( tl.currentContext.playDirection === "reverse" ) {
+            if (tl.currentContext) {
+                if (tl.currentContext.playDirection === "reverse") {
                     return true;
                 }
             }
             else {
                 //if the timeline is not in the process of an update, report the last direction played
-                if ( tl.currentDirection === "reverse" ) {
+                if (tl.currentDirection === "reverse") {
                     return true;
                 }
             }
@@ -6560,22 +7016,22 @@ jQuery.extend( jQuery.easing,
          @param label Label to be queried
          @return Position of label in milliseconds.
          */
-        getLabelPosition: function( label ) {
-            return _posToNum.call( this, _getDefltTL.call(this), label );
+        getLabelPosition: function (label) {
+            return _posToNum.call(this, _getDefltTL.call(this), label);
         },
 
-        lookupSelector: function( eleName ) {
-            if ( typeof eleName !== "string" ) {
+        lookupSelector: function (eleName) {
+            if (typeof eleName !== "string") {
                 return undefined;
             }
             try {
-                return substituteVariables( "${_" + eleName + "}", this.variableValues );
+                return substituteVariables("${_" + eleName + "}", this.variableValues);
             }
-            catch( e ) {
+            catch (e) {
 
             }
         },
-        getComposition : function() {
+        getComposition: function () {
             return this.composition;
         },
 
@@ -6586,8 +7042,8 @@ jQuery.extend( jQuery.easing,
          @return The DOM element node corresponding to this instance.
          @deprecated Use getSymbolElement instead
          */
-        getSymbolElementNode: function() {
-            return $( this.element )[0];
+        getSymbolElementNode: function () {
+            return $(this.element)[0];
         },
 
         /**
@@ -6596,8 +7052,8 @@ jQuery.extend( jQuery.easing,
          @function
          @return The jQuery element object corresponding to this instance.
          */
-        getSymbolElement: function() {
-            return $( this.element );
+        getSymbolElement: function () {
+            return $(this.element);
         },
 
         /**
@@ -6607,7 +7063,7 @@ jQuery.extend( jQuery.easing,
          @function
          @return The name of the Symbol type to which this instance belongs.
          */
-        getSymbolTypeName : function() {
+        getSymbolTypeName: function () {
             return this.options.data.typeName;
         },
 
@@ -6621,8 +7077,8 @@ jQuery.extend( jQuery.easing,
          symbol instance creation or false
          @param {string} timelineName
          */
-        setAutoPlay: function( autoPlay, timelineName ) {
-            if ( !timelineName || timelineName.length === 0 ) {
+        setAutoPlay: function (autoPlay, timelineName) {
+            if (!timelineName || timelineName.length === 0) {
                 timelineName = _getDefltTL.call(this);
             }
             // Disable instance level autoPlay
@@ -6639,37 +7095,37 @@ jQuery.extend( jQuery.easing,
          @param {string} timelineName
          @return "true", true, "false", false or 'undefined'
          */
-        getAutoPlay: function( timelineName ) {
-            if ( !timelineName || timelineName.length === 0 ) {
+        getAutoPlay: function (timelineName) {
+            if (!timelineName || timelineName.length === 0) {
                 timelineName = _getDefltTL.call(this);
             }
             return this.autoPlay[timelineName];
         },
 
         // This is called from Composition, so really shouldn't have an _
-        _playAuto: function( bPlayNestedInstances ) {
-            for ( var tlName in this.timelines ) {
-                if ( this.timelines.hasOwnProperty( tlName ) ) {
-                    var autoPlay = this.getAutoPlay( tlName );
-                    if ( typeof autoPlay === 'undefined' ) {
-                        var tld = this.getTimelineData( tlName );
-                        if ( tld ) {
+        _playAuto: function (bPlayNestedInstances) {
+            for (var tlName in this.timelines) {
+                if (this.timelines.hasOwnProperty(tlName)) {
+                    var autoPlay = this.getAutoPlay(tlName);
+                    if (typeof autoPlay === 'undefined') {
+                        var tld = this.getTimelineData(tlName);
+                        if (tld) {
                             autoPlay = tld.autoPlay;
                         }
                     }
 
-                    if ( typeof autoPlay === 'undefined' || autoPlay === "true" || autoPlay === true ) {
-                        this.playTimeline( tlName, 0, undefined, { firstUpdate:true } );
+                    if (typeof autoPlay === 'undefined' || autoPlay === "true" || autoPlay === true) {
+                        this.playTimeline(tlName, 0, undefined, { firstUpdate: true });
                     }
                 }
             }
-            if ( bPlayNestedInstances && this.aSymbolInstances ) {
+            if (bPlayNestedInstances && this.aSymbolInstances) {
                 var instLen = this.aSymbolInstances.length, i;
-                for ( i = 0; i < instLen; i++ ) {
+                for (i = 0; i < instLen; i++) {
                     var instanceSelector = this.aSymbolInstances[i];
-                    var childSymbol = Symbol.get( instanceSelector );
-                    if ( childSymbol ) {
-                        childSymbol._playAuto( bPlayNestedInstances );
+                    var childSymbol = Symbol.get(instanceSelector);
+                    if (childSymbol) {
+                        childSymbol._playAuto(bPlayNestedInstances);
                     }
                 }
             }
@@ -6684,7 +7140,7 @@ jQuery.extend( jQuery.easing,
          @param {string} variable Name of the variable to fetch.
          @return The value of the variable.
          */
-        getVariable: function( varName ) {
+        getVariable: function (varName) {
             return  this.variableValues[varName];
         },
 
@@ -6696,74 +7152,74 @@ jQuery.extend( jQuery.easing,
          @param {string} variable Name of the variable to set. The variable does not have to be predefined by the Symbol.
          @param value The value to set
          */
-        setVariable: function( varName, value ) {
+        setVariable: function (varName, value) {
             this.variableValues[varName] = value;
-            
+
             // process bindings
             _notifyVariableBindings.call(this, varName);
         },
 
-        destroy: function() {
-            setSymbol( $(this.ele)[0], undefined );
+        destroy: function () {
+            setSymbol($(this.ele)[0], undefined);
             return this;
         },
 
 
-        getTimelineData: function( timelineName ) {
+        getTimelineData: function (timelineName) {
             return this.timelines[timelineName];
         },
 
         // functions called from authoring as well as during runtime but 
         // are not public APIs
-		_getBaseStateName: function() {
-			var baseState = this.options.data.baseState;
-			if ( !baseState ) {
-				baseState = this.defaultBaseState;
-			}
-			return baseState;
-		},
+        _getBaseStateName: function () {
+            var baseState = this.options.data.baseState;
+            if (!baseState) {
+                baseState = this.defaultBaseState;
+            }
+            return baseState;
+        },
 
-		_getSelectorBaseState: function( selector ) {
-			selector = _getStateSelector.call(this, selector);
-			var baseState = this._getBaseStateName();
-			var aBaseStateProperties = null;
-			if (this.options.data.states && this.options.data.states[baseState]) {
-				aBaseStateProperties = this.options.data.states[baseState][selector];
-			}
-			return aBaseStateProperties;
-		},
+        _getSelectorBaseState: function (selector) {
+            selector = _getStateSelector.call(this, selector);
+            var baseState = this._getBaseStateName();
+            var aBaseStateProperties = null;
+            if (this.options.data.states && this.options.data.states[baseState]) {
+                aBaseStateProperties = this.options.data.states[baseState][selector];
+            }
+            return aBaseStateProperties;
+        },
 
-		_symbolBaseStateHasOverride: function (propertyType, propertyName) {
-		
-			if (this.symbolBaseStateOverrides) {
-				for (var i=0; i<this.symbolBaseStateOverrides.length; i++) {
-					if (this.symbolBaseStateOverrides[i][0] == propertyType && 
-						this.symbolBaseStateOverrides[i][1] == propertyName) {
-						return true;
-					}
-				}
-			}
-			return false;
-		},
+        _symbolBaseStateHasOverride: function (propertyType, propertyName) {
+
+            if (this.symbolBaseStateOverrides) {
+                for (var i = 0; i < this.symbolBaseStateOverrides.length; i++) {
+                    if (this.symbolBaseStateOverrides[i][0] == propertyType &&
+                        this.symbolBaseStateOverrides[i][1] == propertyName) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
 
         // Called from authoring layer so needs to be available as method
-        _getTimeline: function( timelineName, toState, fromState ) {
-            var tlKey = _makeTimelineKey.call( this, timelineName, toState, fromState );
-            if ( this.timelineCache[tlKey] ) {
+        _getTimeline: function (timelineName, toState, fromState) {
+            var tlKey = _makeTimelineKey.call(this, timelineName, toState, fromState);
+            if (this.timelineCache[tlKey]) {
                 return this.timelineCache[tlKey];
             }
 
-            if ( !this.getTimelineData( timelineName ) ) {
+            if (!this.getTimelineData(timelineName)) {
                 return null;
             }
 
-            var tld = this.getTimelineData( timelineName ).timeline;
-            if ( toState || fromState ) {
-                tld = Edge.cloneJSONObject( tld );
+            var tld = this.getTimelineData(timelineName).timeline;
+            if (toState || fromState) {
+                tld = Edge.cloneJSONObject(tld);
             }
             else {
                 // Clean out any injected tweens
-                for ( var ii = tld.length - 1; ii >= 0; ii--) {
+                for (var ii = tld.length - 1; ii >= 0; ii--) {
                     if (tld[ii].id === 'injected') {
                         tld.splice(ii, 1);
                     }
@@ -6775,34 +7231,34 @@ jQuery.extend( jQuery.easing,
             var tdict = {};
             var t, o, duration = 0, s, d, last;
 
-            for ( var i = 0; i < cnt; i++ ) {
+            for (var i = 0; i < cnt; i++) {
                 o = tld[i];
-                
-                if ( o.tween ) {
+
+                if (o.tween) {
                     s = o.tween[1];
-                    if ( !sdict[s] ) {
+                    if (!sdict[s]) {
                         sdict[s] = [];
                     }
-                    sdict[s].push( o );
+                    sdict[s].push(o);
 
                     t = o.tween[0] + ":" + o.tween[1] + ":" + (o.tween[0] === 'motion' ? 'location' : o.tween[2]);
-                    if ( !tdict[t] ) {
+                    if (!tdict[t]) {
                         tdict[t] = [];
                     }
-                    tdict[t].push( o );
+                    tdict[t].push(o);
                 }
-                if ( o.tween || o.trigger ) {
+                if (o.tween || o.trigger) {
                     d = o.duration || 0;
-                    duration = Math.max( duration, o.position + d );
+                    duration = Math.max(duration, o.position + d);
                 }
             }
 
-            var cmp = function( a, b ) {
+            var cmp = function (a, b) {
                 return a.position - b.position;
             };
-            for ( t in tdict ) {
-                if ( tdict.hasOwnProperty( t ) ) {
-                    tdict[t].sort( cmp );
+            for (t in tdict) {
+                if (tdict.hasOwnProperty(t)) {
+                    tdict[t].sort(cmp);
                 }
             }
 
@@ -6811,16 +7267,16 @@ jQuery.extend( jQuery.easing,
             var p, ttype, pname, pval;
             var j, k, newO;
 
-            if ( toState ) {
+            if (toState) {
                 // Apply the toState to the timeline data.
-                toState = _mergeBaseState.call( this, _getStateData.call( this, toState ) );
-                for ( selector in toState ) {
-                    if ( toState.hasOwnProperty( t ) ) {
+                toState = _mergeBaseState.call(this, _getStateData.call(this, toState));
+                for (selector in toState) {
+                    if (toState.hasOwnProperty(t)) {
                         props = toState[selector];
                         objs = sdict[selector];
                         numProps = props.length;
 
-                        for ( j = 0; j < numProps; j++ ) {
+                        for (j = 0; j < numProps; j++) {
                             p = props[j];
                             ttype = p[0];
                             pname = p[1];
@@ -6829,10 +7285,10 @@ jQuery.extend( jQuery.easing,
                             var lo = null;
                             last = -1;
                             cnt = objs.length;
-                            for ( k = 0; objs && k < cnt; k++ ) {
+                            for (k = 0; objs && k < cnt; k++) {
                                 o = objs[k];
                                 t = o.tween;
-                                if ( t[0] === ttype && t[2] === pname && (last === -1 || (o.position + o.duration) > last) ) {
+                                if (t[0] === ttype && t[2] === pname && (last === -1 || (o.position + o.duration) > last)) {
                                     lo = o;
                                     last = o.position + o.duration;
                                 }
@@ -6844,25 +7300,25 @@ jQuery.extend( jQuery.easing,
 
             var fromDict = {};
 
-            if ( fromState ) {
+            if (fromState) {
                 // Apply the fromState to the timeline data.
 
-                fromState = _getStateData.call( this, fromState );
-                for ( selector in fromState ) {
-                    if ( fromState.hasOwnProperty( selector ) ) {
+                fromState = _getStateData.call(this, fromState);
+                for (selector in fromState) {
+                    if (fromState.hasOwnProperty(selector)) {
                         props = fromState[selector];
                         objs = sdict[selector];
                         numProps = props.length;
 
-                        for ( j = 0; j < numProps; j++ ) {
+                        for (j = 0; j < numProps; j++) {
                             p = props[j];
                             ttype = p[0];
                             pname = p[1];
                             pval = p[2];
 
                             if (selector === "${symbolSelector}" && this._symbolBaseStateHasOverride(ttype, pname)) {
-								continue;
-							}
+                                continue;
+                            }
 
                             var key = ttype + ":" + selector + ":" + pname;
                             fromDict[key] = pval;
@@ -6870,21 +7326,21 @@ jQuery.extend( jQuery.easing,
                             var fo = null;
                             var start = -1;
                             cnt = 0;
-                            if ( objs ) {
+                            if (objs) {
                                 cnt = objs.length;
                             }
-                            for ( k = 0; objs && k < cnt; k++ ) {
+                            for (k = 0; objs && k < cnt; k++) {
                                 o = objs[k];
                                 t = o.tween;
-                                if ( t[0] === ttype && t[2] === pname && (start === -1 || o.position < start) ) {
+                                if (t[0] === ttype && t[2] === pname && (start === -1 || o.position < start)) {
                                     fo = o;
                                     start = o.position;
                                 }
                             }
-                            if ( fo ) {
+                            if (fo) {
                                 var fromUndefined = fo.tween.length < 4 || !fo.tween[4] || typeof fo.tween[4].fromValue === 'undefined';
-                                if ( fromUndefined  ) {
-                                    if ( !fo.tween[4] ) {
+                                if (fromUndefined) {
+                                    if (!fo.tween[4]) {
                                         fo.tween[4] = {};
                                     }
                                     fo.tween[4].fromValue = pval;
@@ -6895,46 +7351,56 @@ jQuery.extend( jQuery.easing,
                 }
             }
 
-            var isDeterminate = true;
+            var isDeterminate = true;   // need to reconsider this when we do indeterminate tl's
             var val;
-            if ( isDeterminate) {
-                for ( t in tdict ) {
-                    if ( tdict.hasOwnProperty( t ) ) {
-                        if ( tdict[t][0].position > 0 ) {
+            if (isDeterminate /*&& fromState */) {
+                for (t in tdict) {
+                    if (tdict.hasOwnProperty(t)) {
+                        if (tdict[t][0].position > 0) {
                             val = fromDict[t];
-                            if(tdict[t][0].tween && tdict[t][0].tween[0] === "motion"){
+                            if (tdict[t][0].tween && tdict[t][0].tween[0] === "motion") {
                                 o = tdict[t][0];
                                 var x = o.tween[2][0][0];
                                 var y = o.tween[2][0][1];
-                                newO = createSimpleMotionPathData(o.tween[1], {x : x, y : y}, {x : x, y : y},  0, Math.max(0, o.position - 1));
+                                newO = createSimpleMotionPathData(o.tween[1], {x: x, y: y}, {x: x, y: y}, 0, Math.max(0, o.position - 1));
                                 newO.id = 'injected';
-                                tld.push( newO );
+                                tld.push(newO);
                             }
-                            else if ( val !== undefined ) {
-                                o = Edge.cloneJSONObject( tdict[t][0] );
+                            else if (val !== undefined) {
+                                o = Edge.cloneJSONObject(tdict[t][0]);
                                 o.tween[3] = o.tween[4].fromValue = val;
                                 var pos = o.position;
                                 o.position = 0;
                                 o.duration = 0;
                                 o.id = 'injected';
-                                tld.push( o );
+                                tld.push(o);
                             }
                         }
                         last = tdict[t].length - 1;
-                        if ( last >= 0 ) {
+                        if (last >= 0) {
                             o = tdict[t][last];
-                            var endTime = o.position +  o.duration;
-                            if ( endTime < duration ) {
-                                newO = Edge.cloneJSONObject( tdict[t][last] );
-                                if (newO.tween[4]) {
-                                    newO.tween[4].fromValue = o.tween[3];
+                            var endTime = o.position + o.duration;
+                            if (endTime < duration) {
+                                newO = null;
+                                if (o.tween && o.tween[0] === "motion") {
+                                    var i = o.tween[2].length - 1;
+                                    var x = o.tween[2][i][0];
+                                    var y = o.tween[2][i][1];
+                                    newO = createSimpleMotionPathData(o.tween[1], {x: x, y: y}, {x: x, y: y}, endTime, duration - endTime);
+                                } else {
+                                    newO = Edge.cloneJSONObject(tdict[t][last]);
+                                    if (newO.tween[4]) {
+                                        newO.tween[4].fromValue = o.tween[3];
+                                    }
+                                    newO.position = duration;
+                                    newO.duration = 0;
                                 }
-                                newO.position = duration;
-                                newO.duration = 0;
-                                newO.id = 'injected';
-                                newO.opts = newO.opts || {};
-                                newO.opts.reverseOnly = true;
-                                tld.push( newO );
+                                if (newO) {
+                                    newO.id = 'injected';
+                                    newO.opts = newO.opts || {};
+                                    newO.opts.reverseOnly = true;
+                                    tld.push(newO);
+                                }
                             }
                         }
                     }
@@ -6942,242 +7408,245 @@ jQuery.extend( jQuery.easing,
             }
 
             // Append a dummy tween if the declared timeline duration is greater than the final tween or trigger
-            var tldef = this.getTimelineData( timelineName );
-            if ( typeof(tldef.duration) === 'number' && duration < tldef.duration ) {
-                o = { id: "rest", tween: [ "style", "${_Stage}", "-edge_resting", '100%', { fromValue: '0%'}], position: duration, duration: tldef.duration - duration };
-                tld.push( o );
+            var tldef = this.getTimelineData(timelineName);
+            if (typeof(tldef.duration) === 'number' && tldef.duration - duration >= 1 ) {
+                o = { id: "rest", tween: [ "style", "${_Stage}", "-edge_resting", '100%', { fromValue: '0%'}], position: duration, duration: Math.round(tldef.duration - duration) };
+                tld.push(o);
             }
-            var tl = _createTimelineFromData.call( this, tld );
-            _restoreObservers.call( this, timelineName, tl );   // restore the observers saved when prior cached version was flushed
+            var tl = _createTimelineFromData.call(this, tld);
+            _restoreObservers.call(this, timelineName, tl);   // restore the observers saved when prior cached version was flushed
             this.timelineCache[tlKey] = tl;
             return tl;
         },
 
-        _play: function( timelineName, opts ) {
+        _play: function (timelineName, opts) {
             Symbol.startClock();
             opts.externalClock = true;
             opts.dontForceZ = !this.gpuAccelerate;
-            var tld = this.getTimelineData( timelineName );
-            if ( !tld ) {
+            var tld = this.getTimelineData(timelineName);
+            if (!tld) {
                 return;
             }
             var toState = tld.toState;
 
-            if ( timelineName ) {
-                var tl = _getTimelineWithOwnStates.call(this, timelineName );
-                if ( tl ) {
-                    if ( toState && !_isReverse.call( this, opts ) ) {
-                        if ( !this.tlPlayHandler ) {
+            if (timelineName) {
+                var tl = _getTimelineWithOwnStates.call(this, timelineName);
+                if (tl) {
+                    if (toState && !_isReverse.call(this, opts)) {
+                        if (!this.tlPlayHandler) {
                             var self = this;
                             this.tlPlayHandler = {};
-                            this.tlPlayHandler.onComplete = function() {
-                                _ensureToState.call( self, this.timelineName, this.opts );
-                                this.tl.removeObserver( self.tlPlayHandler );
+                            this.tlPlayHandler.onComplete = function () {
+                                _ensureToState.call(self, this.timelineName, this.opts);
+                                this.tl.removeObserver(self.tlPlayHandler);
                             };
                         }
-                        $.extend( this.tlPlayHandler, {tl: tl, timelineName:timelineName, opts: opts} );
-                        tl.addObserver( this.tlPlayHandler );
+                        $.extend(this.tlPlayHandler, {tl: tl, timelineName: timelineName, opts: opts});
+                        tl.addObserver(this.tlPlayHandler);
                     }
-                    tl.play( opts );
+                    tl.play(opts);
                 }
             }
         },
-        
-        _executeSymbolAction: function( e, data ) {
-            if ( typeof data !== "object" || data.length < 3 ) {
+        // Used in commands inserted in generated file
+        _executeSymbolAction: function (e, data) {
+            if (typeof data !== "object" || data.length < 3) {
                 return;
             }
 
             var actionFunction = data[0];
             var symInstanceSelector = data[1];
-            var symInstance = Edge.Symbol.get( this.$( symInstanceSelector ) );
-            if ( !symInstance || !actionFunction ) {
+            var symInstance = Edge.Symbol.get(this.$(symInstanceSelector));
+            if (!symInstance || !actionFunction) {
                 return;
             }
 
             var args = data[2];
-            if ( !args || typeof args !== "object" ) {
+            if (!args || typeof args !== "object") {
                 args = null;
             }
 
-            symInstance[actionFunction].apply( symInstance, args );
+            symInstance[actionFunction].apply(symInstance, args);
         },
         //Alias for _executeSymbolAction used when writing minified content
-        eSA: function(e, data) {
+        eSA: function (e, data) {
             this._executeSymbolAction(e, data);
         },
-        
-        _executeMediaAction: function( e, data ) {
-            if ( typeof data !== "object" || data.length < 3 ) {
+
+        // Used in commands inserted in generated file
+        _executeMediaAction: function (e, data) {
+            if (typeof data !== "object" || data.length < 3) {
                 return;
             }
 
             var actionFunction = data[0];
             var medInstanceSelector = data[1];
-            var medInstance = this.$( medInstanceSelector )[0];
-            if ( !medInstance || !actionFunction ) {
+            var medInstance = this.$(medInstanceSelector)[0];
+            if (!medInstance || !actionFunction) {
                 return;
             }
 
             var args = data[2];
-            if ( !args || typeof args !== "object" ) {
+            if (!args || typeof args !== "object") {
                 args = null;
             }
 
-            if ( actionFunction === "play" ) {
-                if ( args && args.length > 0 && typeof args[0] === "number" ) {
-                    medInstance.currentTime=args[0];
+            if (actionFunction === "play") {
+                if (args && args.length > 0 && typeof args[0] === "number") {
+                    medInstance.currentTime = args[0];
                 }
                 medInstance.play();
             }
-            else if ( actionFunction === "pause" ) {
+            else if (actionFunction === "pause") {
                 medInstance.pause();
             }
         },
         //Alias for _executeSymbolAction used when writing minified content
-        eMA: function(e, data) {
+        eMA: function (e, data) {
             this._executeMediaAction(e, data);
         },
 
         createChildSymbol: function (symbolName, parentSelector, index, variables) {
-            if (!symbolName || !parentSelector || symbolName === this.getSymbolTypeName())
+            if (!symbolName || !parentSelector || symbolName === this.getSymbolTypeName()) {
                 return;
-            var parentEle = this.$(parentSelector), 
+            }
+            var parentEle = this.$(parentSelector),
                 aSymbolInstances;
-            if (!parentEle || !parentEle[0])
+            if (!parentEle || !parentEle[0]) {
                 return;
-            
+            }
+
             aSymbolInstances = _createSymbolChild.call(this.getComposition(), symbolName, parentEle, index, variables);
             if (aSymbolInstances) {
                 _addChildSymbol.call(this, aSymbolInstances[0]);
                 return aSymbolInstances[0];
             }
         },
-        
+
         // Remove this instance from its element
         // and the global list of instances. It will be eligible for gc as soon
         // as user code lets go of references.
-        deleteSymbol: function( opts ) {
+        deleteSymbol: function (opts) {
             opts = opts || {};
             var symbolInstances;
-            if ( this.composition ) {
+            if (this.composition) {
                 symbolInstances = this.composition.getSymbols();
             }
 
-            if ( !symbolInstances ) {
+            if (!symbolInstances) {
                 return;
             }
 
-            var evt = _createEvent.call(this, {  } );
-            this.notifyObservers( 'onPreRemove', evt );
-            this.notifyObservers( 'beforeDeletion', evt );
-            if ( !evt.performDefaultAction ) {
+            var evt = _createEvent.call(this, {  });
+            this.notifyObservers('onPreRemove', evt);
+            this.notifyObservers('beforeDeletion', evt);
+            if (!evt.performDefaultAction) {
                 return;
             }
 
             var i, instLen, instanceSelector;
             // Remove all nested symbol instances
-            if ( this.aSymbolInstances ) {
+            if (this.aSymbolInstances) {
                 instLen = this.aSymbolInstances.length;
-                while ( this.aSymbolInstances.length > 0 ) {
+                while (this.aSymbolInstances.length > 0) {
                     instanceSelector = this.aSymbolInstances[0];
-                    this.aSymbolInstances.splice( 0, 1 );
-                    this.composition.removeSymbol( instanceSelector, opts );
+                    this.aSymbolInstances.splice(0, 1);
+                    this.composition.removeSymbol(instanceSelector, opts);
                 }
             }
 
-            if ( this.timelines ) {
-				for ( var tlName in this.timelines ) {
-					if ( this.timelines.hasOwnProperty( tlName )) {
-						_stop.call( this, tlName );
-					}
-				}
+            if (this.timelines) {
+                for (var tlName in this.timelines) {
+                    if (this.timelines.hasOwnProperty(tlName)) {
+                        _stop.call(this, tlName);
+                    }
+                }
             }
 
             var parentSymbol = this.getParentSymbol();
             if (parentSymbol && parentSymbol.aSymbolInstances) {
                 instLen = parentSymbol.aSymbolInstances.length;
-                for ( i = 0; i < instLen; i++ ) {
+                for (i = 0; i < instLen; i++) {
                     instanceSelector = parentSymbol.aSymbolInstances[i];
                     if (parentSymbol.getSymbol(instanceSelector) === this) {
-						parentSymbol.aSymbolInstances.splice( i, 1 );
-						break;
+                        parentSymbol.aSymbolInstances.splice(i, 1);
+                        break;
                     }
                 }
             }
-            
-   			if ( this.idLookup ) {
-				var sel;
-				for ( sel in this.idLookup ) {
-					if ( this.idLookup.hasOwnProperty( sel ) ) {
-						$( sel ).removeData( "symParent");
-					}
-				}
-			}
+
+            if (this.idLookup) {
+                var sel;
+                for (sel in this.idLookup) {
+                    if (this.idLookup.hasOwnProperty(sel)) {
+                        $(sel).removeData("symParent");
+                    }
+                }
+            }
 
             var ele = this.element;
-            setSymbol( $(ele)[0], undefined );
+            setSymbol($(ele)[0], undefined);
 
-            if ( opts._keepElement ) {
-                $( ele ).empty();
+            if (opts._keepElement) {
+                $(ele).empty();
             }
             else {
-                $( ele ).remove();
+                $(ele).remove();
             }
 
             var len = symbolInstances.length;
-            for ( i = len; i >= 0; i-- ) {
-                if ( symbolInstances[i] === this ) {
-                    symbolInstances.splice( i, 1 );
+            for (i = len; i >= 0; i--) {
+                if (symbolInstances[i] === this) {
+                    symbolInstances.splice(i, 1);
                     break;
                 }
             }
             this.element = null;
-            this.notifyObservers( 'onPostRemove', evt );
+            this.notifyObservers('onPostRemove', evt);
             this.observers = [];
         },
-        getSymbol: function( selector ) {
-            var $ele = this.$( selector );
-            return Symbol.get( $ele );
+        getSymbol: function (selector) {
+            var $ele = this.$(selector);
+            return Symbol.get($ele);
         },
-        getChildSymbols: function() {
+        getChildSymbols: function () {
             var aChildSymbols = [];
-            if ( this.aSymbolInstances ) {
-                for ( var i = 0; i < this.aSymbolInstances.length; i++ ) {
+            if (this.aSymbolInstances) {
+                for (var i = 0; i < this.aSymbolInstances.length; i++) {
                     var childInstanceSelector = this.aSymbolInstances[i];
-                    var childSymbol = this.getSymbol( childInstanceSelector );
-                    if ( childSymbol ) {
-                        aChildSymbols.push( childSymbol );
+                    var childSymbol = this.getSymbol(childInstanceSelector);
+                    if (childSymbol) {
+                        aChildSymbols.push(childSymbol);
                     }
                 }
             }
             return aChildSymbols;
         },
-        getParentSymbol: function() {
+        getParentSymbol: function () {
             return _getParentSymbol.call(this);
         },
-       $: function( selector ) {
+        $: function (selector) {
             var ele = selector;
-            if ( typeof selector === 'string' ) {
-                if ( selector.search( /\$\{/ ) === -1 ) {
-                    ele = this.lookupSelector( selector );
-                    if ( typeof ele === "undefined" ) {
+            if (typeof selector === 'string') {
+                if (selector.search(/\$\{/) === -1) {
+                    ele = this.lookupSelector(selector);
+                    if (typeof ele === "undefined") {
                         ele = selector;
                     }
                 }
                 else {
-                    ele = substituteVariables( selector, this.variableValues );
+                    ele = substituteVariables(selector, this.variableValues);
                 }
             }
 
-            var $ele = $( ele );
+            var $ele = $(ele);
             return $ele;
         }
 
-    } );
+    });
 
     /**
-     Get a parameter this instance
+     Get a parameter of this instance
      @name getParameter
      @memberOf Edge.Symbol.prototype
      @function
@@ -7197,64 +7666,86 @@ jQuery.extend( jQuery.easing,
      @deprecated Use sym.setVariable instead
      */
     Symbol.prototype.setParameter = Symbol.prototype.setVariable;
-    
 
-    Symbol.get = function( ele ) {    // return the Symbol for an element
+
+    Symbol.get = function (ele) {    // return the Symbol for an element
         return getSymbol($(ele)[0]);
     };
-    Symbol.getDefaultEasing = function( ele ) {
+    Symbol.getDefaultEasing = function (ele) {
         return Edge.TimelineObject.defaultEasing;
     };
-    Symbol.getParentSymbol = function( ele ) {
-        var parents = $( ele ).parents();
+    Symbol.getParentSymbol = function (ele) {
+        var parents = $(ele).parents();
         var parentLen = parents.length;
-        for ( var i = 0; i < parentLen; i++ ) {
-            var sym = Symbol.get( parents[i] );
-            if ( sym ) {
+        for (var i = 0; i < parentLen; i++) {
+            var sym = Symbol.get(parents[i]);
+            if (sym) {
                 return sym;
             }
         }
         return null;
     };
- 
-    Symbol.startClock = function() {
-        if ( !Symbol.timerFunc ) {
-            
+
+    Symbol.startClock = function () {
+        if (!Symbol.timerFunc) {
+
             var t = 1000 / Edge.Timeline.config.fps;
-             Symbol.requestAnimationFrame = window.requestAnimationFrame ||
-                    window.webkitRequestAnimationFrame ||
-                    window.mozRequestAnimationFrame ||
-                    window.msRequestAnimationFrame ||
-                    window.oRequestAnimationFrame;
+            Symbol.requestAnimationFrame = window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                window.msRequestAnimationFrame ||
+                window.oRequestAnimationFrame;
             var ua = navigator.userAgent;
             var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
-            if (isWebkit && (window.self !== window.top) && (/iPad/.test(ua) || /iPod/.test(ua) || /iPhone/.test(ua) )) {
+            
+            if (isWebkit && /OS 6/.test(ua) && ( /iPad/.test(ua) || /iPod/.test(ua) || /iPhone/.test(ua) )) {
                 // Bug 3362603 - iOS 6 didn't implement RAF correctly for multiple iframes in page
                 // If they fix it in 7 we can special case this for versions
-                // Note that (window.self === window.top) tests if we are in iFrame
+                // Originally we tested (window.self === window.top) to limit this behavior to iFrames, but DPS content appears to not be in an iFrame, yet it still has this issue.  It appears that RAF only allows one listener.
                 Symbol.requestAnimationFrame = null;
             }
-            Symbol.requestAnimationFrame = Symbol.requestAnimationFrame ||
-                    function( cb ) {
-                        window.setTimeout( cb, t );
-                    };
             
-            Symbol.timerFunc = function() {
+            Symbol.requestAnimationFrame = Symbol.requestAnimationFrame ||
+                function (cb) {
+                    window.setTimeout(cb, t);
+                };
+
+            /* // Uncomment to find out if a browser supports raf
+             var gotRaf = !!(window.requestAnimationFrame ||
+             window.webkitRequestAnimationFrame ||
+             window.mozRequestAnimationFrame ||
+             window.msRequestAnimationFrame ||
+             window.oRequestAnimationFrame);
+             window.console.log('gotRAF = ' + gotRaf);
+             */
+            Symbol.timerFunc = function () {
                 Edge.Timeline.tick();
-                Symbol.requestAnimationFrame.call( window, Symbol.timerFunc );
+                Symbol.requestAnimationFrame.call(window, Symbol.timerFunc);
             };
-            Symbol.requestAnimationFrame.call(window, Symbol.timerFunc );
+            Symbol.requestAnimationFrame.call(window, Symbol.timerFunc);
         }
     };
 
-    var bindHelper = function( compId, symbolName, elementOrTimelineSelector, eventName, eventFunction, bindType, apiName ) {
-        var symbolDefn = Edge.getCompositionSymbolDefns( compId )[symbolName];
-        if ( !symbolDefn ) {
-            Edge.logError( "$.Edge.Symbol." + apiName + ": symbol not found" );
+    function addTriggerFromData(sym, timelineName, customEventName, delay){
+        var tlod,
+            tlKey = _makeTimelineKey.call(sym, timelineName, sym.toState, sym.fromState),
+            tl = sym.timelineCache[tlKey],
+            triggerTlo;
+        if (tl) {
+            tlod = { trigger: [ customEventName, timelineName ], position: delay, duration: 0, id: customEventName };
+            triggerTlo = Edge.Timeline.createTriggerFromData(tl, tlod);
+            tl.add(triggerTlo, delay, 0, "");
+        }
+    }
+
+    var bindHelper = function (compId, symbolName, elementOrTimelineSelector, eventName, eventFunction, bindType, apiName, delay) {
+        var symbolDefn = Edge.getCompositionSymbolDefns(compId)[symbolName];
+        if (!symbolDefn) {
+            Edge.logError("$.Edge.Symbol." + apiName + ": symbol not found");
             return;
         }
 
-        if ( !symbolDefn.actions ) {
+        if (!symbolDefn.actions) {
             symbolDefn.actions = {};
         }
 
@@ -7262,91 +7753,95 @@ jQuery.extend( jQuery.easing,
 
         symbolDefn.actions[name] = eventFunction;
 
-        if ( !symbolDefn.bindings ) {
+        if (!symbolDefn.bindings) {
             symbolDefn.bindings = [];
         }
         var bd = [
             [bindType, elementOrTimelineSelector, eventName],
             name
         ];
-        symbolDefn.bindings.push( bd );
+        symbolDefn.bindings.push(bd);
 
         //patch any existing symbols
         /*jshint eqeqeq:false */
         /*jshint eqnull:true */
-        if ( null == Edge.compositions ) {
+        if (null == Edge.compositions) {
             return;
         }
 
         var theComp = Edge.compositions[compId];
-        if ( null == theComp ) {
+        if (null == theComp) {
             return;
         }
 
         var aSymbolInstances = theComp.getSymbols();
-        if ( null == aSymbolInstances ) {
+        if (null == aSymbolInstances) {
             return;
         }
 
         var instLen = aSymbolInstances.length;
         var symbolInstance;
-        for ( var i = 0; i < instLen; i++ ) {
+        for (var i = 0; i < instLen; i++) {
             symbolInstance = aSymbolInstances[i];
             var currSymName = symbolInstance.getSymbolTypeName();
-            if ( symbolName === currSymName ) {
+            if (symbolName === currSymName) {
                 var aActions = {};
                 aActions[name] = eventFunction;
-                _addActionsFromData.call( symbolInstance, aActions );
-                _addBindingFromData.call( symbolInstance, bd );
+                _addActionsFromData.call(symbolInstance, aActions);
+                _addBindingFromData.call(symbolInstance, bd);
+                if(bindType === 'timeline'){
+                    addTriggerFromData(symbolInstance, elementOrTimelineSelector, eventName, delay);
+                }
             }
         }
     };
 
-    Symbol.bindElementAction = function ( compId, symbolName, elementSelector, eventName, eventFunction ) {
-        bindHelper( compId, symbolName, elementSelector, eventName, eventFunction, 'element', 'bindElementAction' );
+    Symbol.bindElementAction = function (compId, symbolName, elementSelector, eventName, eventFunction) {
+        bindHelper(compId, symbolName, elementSelector, eventName, eventFunction, 'element', 'bindElementAction');
     };
 
-    Symbol.bindTimelineAction = function ( compId, symbolName, timelineName, eventName, eventFunction ) {
-        bindHelper( compId, symbolName, timelineName, eventName, eventFunction, 'timeline', 'bindTimelineAction' );
+    Symbol.bindTimelineAction = function (compId, symbolName, timelineName, eventName, eventFunction) {
+        bindHelper(compId, symbolName, timelineName, eventName, eventFunction, 'timeline', 'bindTimelineAction');
     };
 
-    Symbol.bindTriggerAction = function( compId, symbolName, timelineName, delay, triggerFunction ) {
-        var symbolDef = Edge.getCompositionSymbolDefns( compId )[symbolName];
-        if ( !symbolDef ) {
-            Edge.logError( "$.Edge.Symbol.bindTriggerAction: symbol not found" );
+    Symbol.bindTriggerAction = function (compId, symbolName, timelineName, delay, triggerFunction) {
+        var symbolDef = Edge.getCompositionSymbolDefns(compId)[symbolName];
+        if (!symbolDef) {
+            Edge.logError("$.Edge.Symbol.bindTriggerAction: symbol not found");
             return;
         }
 
         var tl = symbolDef.timelines[timelineName].timeline;
 
-        if ( !tl ) {
-            Edge.logError( "$.Edge.Symbol.bindTriggerAction: timeline not found" );
+        if (!tl) {
+            Edge.logError("$.Edge.Symbol.bindTriggerAction: timeline not found");
             return;
         }
 
         var customEventName = "trig_" + Edge.Symbol._makeUniqueID();
-        var tlod = { trigger: [ customEventName, timelineName ], position : delay, duration: 0, id: customEventName };
-        tl.push( tlod );
+        var tlod = { trigger: [ customEventName, timelineName ], position: delay, duration: 0, id: customEventName };
+        tl.push(tlod);
 
-        bindHelper( compId, symbolName, timelineName, customEventName, triggerFunction, 'timeline', 'bindTriggerAction' );
+        bindHelper(compId, symbolName, timelineName, customEventName, triggerFunction, 'timeline', 'bindTriggerAction', delay);
     };
-    
-    Symbol.bindSymbolAction = function ( compId, symbolName, eventName, eventFunction) {
-        bindHelper( compId, symbolName, "", eventName, eventFunction, 'symbol', 'bindSymbolAction' );
+
+    Symbol.bindSymbolAction = function (compId, symbolName, eventName, eventFunction) {
+        bindHelper(compId, symbolName, "", eventName, eventFunction, 'symbol', 'bindSymbolAction');
     };
 
     Symbol.bindVariableAction = function (compId, symbolName, varName, eventFunction) {
         var eventName = "variableChanged:" + varName;
-        bindHelper( compId, symbolName, "", eventName, eventFunction, 'symbol', 'bindVariableAction' );
+        bindHelper(compId, symbolName, "", eventName, eventFunction, 'symbol', 'bindVariableAction');
     };
 
     Symbol.bindVariableActionToSymbol = function (sym, varName, actionFunc) {
         var symbolInstance = Symbol.get(sym);
-        if (!symbolInstance)
+        if (!symbolInstance) {
             return;
+        }
 
         varName = Symbol._parseVariableName(varName);
-        
+
         var eventName = "variableChanged:" + varName;
         var name = Symbol._makeUniqueID();
 
@@ -7354,106 +7849,110 @@ jQuery.extend( jQuery.easing,
             ["symbol", "", eventName],
             name
         ];
-        
+
         var aActions = {};
         aActions[name] = actionFunc;
-        _addActionsFromData.call( symbolInstance, aActions );
-        _addBindingFromData.call( symbolInstance, bd );
+        _addActionsFromData.call(symbolInstance, aActions);
+        _addBindingFromData.call(symbolInstance, bd);
     };
-    
+
     var uniqueID = (new Date()).getTime();
-    var makeUniqueID = function() {
+    var makeUniqueID = function () {
         var id = 'eid_' + uniqueID++;
-        while ( $( '#' + id ).length > 0 )
+        while ($('#' + id).length > 0)
             id = 'eid_' + uniqueID++;
         return id;
     };
     Symbol._makeUniqueID = makeUniqueID;
 
-    Edge.importSymbolDefinitions = function() {};
-    
-    Edge.registerFonts = function( fonts ) {
-        if ( !fonts ) {
+    Edge.importSymbolDefinitions = function () {
+    };
+
+    Edge.registerFonts = function (fonts) {
+        if (!fonts) {
             return;
         }
         var iTKPos, iTKEnd, eleTK, fnTypeKitInit, bFontExists, bEWF;
-        if ( !Edge.fonts ) {
+        if (!Edge.fonts) {
             Edge.fonts = {};
         }
-        for ( var fontName in fonts ) {
-            if ( fonts.hasOwnProperty( fontName ) ) {
-                if ( !Edge.fonts[fontName] ) {
+        for (var fontName in fonts) {
+            if (fonts.hasOwnProperty(fontName)) {
+                if (!Edge.fonts[fontName]) {
 
                     var sInclude = fonts[fontName];
 
-                    if ( sInclude && sInclude !== "" ) {
+                    if (sInclude && sInclude !== "") {
 
                         //see if Edge.fonts already has this include... if so we don't need to instantiate it again...
                         bFontExists = false;
-                        for ( var sExistingFont in Edge.fonts ) {
-                            if ( Edge.fonts.hasOwnProperty( sExistingFont ) ) {
-                                if ( Edge.fonts[sExistingFont] === sInclude ) {
+                        for (var sExistingFont in Edge.fonts) {
+                            if (Edge.fonts.hasOwnProperty(sExistingFont)) {
+                                if (Edge.fonts[sExistingFont] === sInclude) {
                                     bFontExists = true;
                                 }
                             }
                         }
 
-                        if ( !bFontExists ) {
+                        if (!bFontExists) {
                             Edge.fonts[fontName] = sInclude;
 
                             /*
                              <script type="text/javascript" src="//use.typekit.com/pza4jbg.js"></script>
                              <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
                              */
-                            iTKPos = sInclude.indexOf( "//use.typekit.com/" );
+                            iTKPos = sInclude.indexOf("//use.typekit.com/");
                             if (iTKPos < 0) {
-                                iTKPos = sInclude.indexOf( "//use.typekit.net/" );
+                                iTKPos = sInclude.indexOf("//use.typekit.net/");
                             }
                             if (iTKPos < 0) {
-                                iTKPos = sInclude.indexOf( "//use.edgefonts.net/" );
+                                iTKPos = sInclude.indexOf("//use.edgefonts.net/");
                                 bEWF = (iTKPos > 0);
                                 window._adobewebfontsappname_ = "Animate";
                             }
-                            
+
                             if (iTKPos > 0) {
-                                
-                                iTKEnd = sInclude.indexOf( "\"", iTKPos + 1 );
-                                if ( iTKEnd > 0 ) {
-                                    var sTKURL = sInclude.substring( iTKPos, iTKEnd );
-                                    
+
+                                iTKEnd = sInclude.indexOf("\"", iTKPos + 1);
+                                if (iTKEnd > 0) {
+                                    var sTKURL = sInclude.substring(iTKPos, iTKEnd);
+
                                     if (bEWF && window.location.protocol === 'file:') {
                                         sTKURL = "http:" + sTKURL;
                                     }
 
-                                    eleTK = document.createElement( "script" );
+                                    eleTK = document.createElement("script");
                                     eleTK.src = sTKURL;
                                     eleTK.type = "text/javascript";
-                                    document.getElementsByTagName( "head" )[0].appendChild( eleTK );
+                                    document.getElementsByTagName("head")[0].appendChild(eleTK);
                                     if (!bEWF) {
                                         fnTypeKitInit = function () {
                                             try {
                                                 window.Typekit.load();
                                             }
-                                            catch ( e ) {
-                                                setTimeout( fnTypeKitInit, 100 );
+                                            catch (e) {
+                                                setTimeout(fnTypeKitInit, 100);
                                             }
                                         };
-                                        setTimeout( fnTypeKitInit, 100 );
+                                        setTimeout(fnTypeKitInit, 100);
                                     }
                                 }
                             }
-                            else if(sInclude.indexOf("<script") < 0) {
+                            else if (sInclude.indexOf("<script") < 0) {
                                 //for non-script includes - we can just append to the head
-                                $( 'head' ).append( sInclude );
+                                $('head').append(sInclude);
                             }
                             else {
                                 //we can try to eval their script...
                                 var iScriptStart = sInclude.indexOf(">");
                                 var iScriptEnd = sInclude.indexOf("</script>");
-                                
+
                                 if (iScriptStart > 0 && iScriptEnd > 0) {
                                     var sScript = sInclude.substring(iScriptStart + 1, iScriptEnd);
-                                    try { window.eval(sScript); } catch(exFnt) {}
+                                    try {
+                                        window.eval(sScript);
+                                    } catch (exFnt) {
+                                    }
                                 }
                             }
                         }
@@ -7462,188 +7961,200 @@ jQuery.extend( jQuery.easing,
             }
         }
     };
-    
 
-    var _Nx=0;
-    function nx() { return "dg" + (++_Nx); }
-                                        
+
+    var _Nx = 0;
+
+    function nx() {
+        return "dg" + (++_Nx);
+    }
+
     //in support of condensed timeline declaration
-    Edge.P = function(_p,_st,_tt,_vt,_u) {
-                var o=this, v=_st, sU='';
-                o.p = _p;
-                o.tt = _tt || "style";
-                /*jshint eqnull:true */
-                if(_u || _u === "") {
-                    o.u = _u;
-                }
-                else if(!o.u && o.u !== "") {
-                    o.u = 'px';
-                }
-                if(typeof(_st) === "number") {
-                    sU = o.u;
-                    v = _st+sU;
-                }
-                o.vt = _vt;
-        
-                 /*jshint eqeqeq:false */
-                 /*jshint eqnull:true */
-                if(_st != null) {
-                    if(!o.st[o.s]) {
-                        o.st[o.s] = [];
-                    }
-                    if(o.vt) {
-                        o.st[o.s][o.st[o.s].length]=[o.tt, o.p, v, {valueTemplate:o.vt}];
-                    }
-                    else {
-                        o.st[o.s][o.st[o.s].length]=[o.tt, o.p, v];
-                    }
-                    o.last=_st;
-                }
-                return o;
-             };
-    Edge.T = function(_p,_t,_d,_e,_f) {
-                var oF = {}, o = this;
-                var sU = '', fv=_f, v=_t;
-                if(!fv && fv !== 0) {
-                    fv = o.last;
-                }
-                if(typeof(_t) === "number") {
-                    sU = o.u;
-                    if(fv || fv === 0) {
-                        fv= fv + sU;
-                    }
-                    v = _t + sU;
-                }
-                if(fv || fv === 0) {
-                    oF.f=fv;
-                }
-                if(o.vt) {
-                    oF.vt=o.vt;
-                }
-                if(!_e) {
-                    _e=o.lastE;
-                }
-                if(!_e) {
-                    _e = "linear";
-                }
-                
-                 /*jshint eqeqeq:false */
-                 /*jshint eqnull:true */
-                if(_d == null) { _d = 0; }
-                
-                if (o.tt === "motion") {
-                    o.tl[o.tl.length] = { id:nx(), tw:[o.tt, o.s, v],p:Math.floor(_p*1000),d:Math.floor(_d*1000),e: _e};
-                }
-                else {
-                    o.tl[o.tl.length] = { id:nx(), tw:[o.tt, o.s, o.p, v, oF ],p:Math.floor(_p*1000),d:Math.floor(_d*1000),e: _e};
-                }
-                o.last=_t;
-                o.lastE=_e;
-                return o;
-            };
-    Edge.A = function(_s, _tl, _st) {
-                if(!_tl) {
-                    _tl = this.tl;
-                    _st = this.st;
-                }
-                return { tl:_tl, st:_st, s:_s, A:Edge.A, P:Edge.P, T:Edge.T};
-            };
+    Edge.P = function (_p, _st, _tt, _vt, _u) {
+        var o = this, v = _st, sU = '';
+        o.p = _p;
+        o.tt = _tt || "style";
+        /*jshint eqnull:true */
+        if (_u || _u === "") {
+            o.u = _u;
+        }
+        else if (!o.u && o.u !== "") {
+            o.u = 'px';
+        }
+        if (typeof(_st) === "number") {
+            sU = o.u;
+            v = _st + sU;
+        }
+        o.vt = _vt;
+
+        /*jshint eqeqeq:false */
+        /*jshint eqnull:true */
+        if (_st != null) {
+            if (!o.st[o.s]) {
+                o.st[o.s] = [];
+            }
+            if (o.vt) {
+                o.st[o.s][o.st[o.s].length] = [o.tt, o.p, v, {valueTemplate: o.vt}];
+            }
+            else {
+                o.st[o.s][o.st[o.s].length] = [o.tt, o.p, v];
+            }
+            o.last = _st;
+        }
+        return o;
+    };
+    Edge.T = function (_p, _t, _d, _e, _f) {
+        var oF = {}, o = this;
+        var sU = '', fv = _f, v = _t;
+        if (!fv && fv !== 0) {
+            fv = o.last;
+        }
+        if (typeof(_t) === "number") {
+            sU = o.u;
+            if (fv || fv === 0) {
+                fv = fv + sU;
+            }
+            v = _t + sU;
+        }
+        if (fv || fv === 0) {
+            oF.f = fv;
+        }
+        if (o.vt) {
+            oF.vt = o.vt;
+        }
+        if (!_e) {
+            _e = o.lastE;
+        }
+        if (!_e) {
+            _e = "linear";
+        }
+
+        /*jshint eqeqeq:false */
+        /*jshint eqnull:true */
+        if (_d == null) {
+            _d = 0;
+        }
+
+        if (o.tt === "motion") {
+            o.tl[o.tl.length] = { id: nx(), tw: [o.tt, o.s, v], p: Math.floor(_p * 1000), d: Math.floor(_d * 1000), e: _e};
+        }
+        else {
+            o.tl[o.tl.length] = { id: nx(), tw: [o.tt, o.s, o.p, v, oF ], p: Math.floor(_p * 1000), d: Math.floor(_d * 1000), e: _e};
+        }
+        o.last = _t;
+        o.lastE = _e;
+        return o;
+    };
+    Edge.A = function (_s, _tl, _st) {
+        if (!_tl) {
+            _tl = this.tl;
+            _st = this.st;
+        }
+        return { tl: _tl, st: _st, s: _s, A: Edge.A, P: Edge.P, T: Edge.T};
+    };
 
     Edge.compositions = Edge.compositions || {};
     Edge.compositionDefns = Edge.compositionDefns || {};
     Edge.compositionFonts = Edge.compositionFonts || {};
+    Edge.compositionOpts = Edge.compositionOpts || {};
     Edge.compositionReadyHandler = Edge.compositionReadyHandler || {};
 
-    Edge.registerSymbolDefns = function ( compId, symbolData ) {
-        if ( !compId || compId.length <= 0 || !Edge.compositionDefns[compId] ) {
+    Edge.registerSymbolDefns = function (compId, symbolData) {
+        if (!compId || compId.length <= 0 || !Edge.compositionDefns[compId]) {
             return;
         }
 
         var symbolName, tlName, i, tw;
-        for ( symbolName in symbolData ) {
-            if ( symbolData.hasOwnProperty( symbolName ) ) {
+        for (symbolName in symbolData) {
+            if (symbolData.hasOwnProperty(symbolName)) {
                 var oD = symbolData[symbolName];
                 oD.typeName = symbolName;
-                 /*jshint eqeqeq:false */
-                 /*jshint eqnull:true */
+                /*jshint eqeqeq:false */
+                /*jshint eqnull:true */
 
                 //patch short names...
-                if ( oD.v ) {
+                if (oD.v) {
                     oD.version = oD.v;
                 }
-                if ( oD.v ) {
+                if (oD.v) {
                     oD.minimumCompatibleVersion = oD.mv;
                 }
-                if ( oD.b ) {
+                if (oD.b) {
                     oD.build = oD.b;
                 }
-                if ( oD.bS ) {
+                if (oD.bS) {
                     oD.baseState = oD.bS;
                 }
-                if ( oD.iS ) {
+                if (oD.iS) {
                     oD.initialState = oD.iS;
                 }
-                if ( oD.gpu != null ) {
+                if (oD.gpu != null) {
                     oD.gpuAccelerate = oD.gpu;
                 }
-                if ( oD.rI != null ) {
+                if (oD.rI != null) {
                     oD.resizeInstances = oD.rI;
                 }
-                if ( oD.cn ) {
+                if (oD.cn) {
                     oD.content = oD.cn;
                 }
-                if ( oD.content ) {
+                if (oD.content) {
                     var oDC = oD.content;
-                    if ( oDC.sI != null ) {
+                    if (oDC.sI != null) {
                         oDC.symbolInstances = oD.content.sI;
                     }
-                    if ( oDC.symbolInstances ) {
-                        for ( var iS = 0; iS < oDC.symbolInstances.length; iS++ ) {
+                    if (oDC.symbolInstances) {
+                        for (var iS = 0; iS < oDC.symbolInstances.length; iS++) {
                             var oSI = oDC.symbolInstances[iS];
-                            if ( oSI.sN != null ) {
+                            if (oSI.sN != null) {
                                 oSI.symbolName = oSI.sN;
                             }
-                            if ( oSI.a != null ) {
+                            if (oSI.a != null) {
                                 oSI.autoPlay = oSI.a;
                             }
-                            if ( oSI.x != null ) {
+                            if (oSI.x != null) {
                                 oSI.variables = oSI.x;
                             }
                         }
                     }
                 }
 
-                if ( oD.x ) {
+                if (oD.cg) {
+                    oD.centerStage = oD.cg;
+                }
+                if (oD.stf) {
+                    oD.scaleToFit = oD.stf;
+                }
+                if (oD.x) {
                     oD.variables = oD.x;
                 }
-                if ( oD.s ) {
+                if (oD.s) {
                     oD.states = oD.s;
                 }
-                if ( oD.tl ) {
+                if (oD.tl) {
                     oD.timelines = oD.tl;
                 }
-                for ( tlName in oD.timelines ) {
-                    if ( oD.timelines.hasOwnProperty( tlName ) ) {
+                for (tlName in oD.timelines) {
+                    if (oD.timelines.hasOwnProperty(tlName)) {
                         var oTL = oD.timelines[tlName];
-                        if ( oTL.fS ) {
+                        if (oTL.fS) {
                             oTL.fromState = oTL.fS;
                         }
-                        if ( oTL.tS ) {
+                        if (oTL.tS) {
                             oTL.toState = oTL.tS;
                         }
-                        if ( oTL.d != null ) {
+                        if (oTL.d != null) {
                             oTL.duration = oTL.d;
                         }
-                        if ( oTL.a != null ) {
+                        if (oTL.a != null) {
                             oTL.autoPlay = oTL.a;
                         }
-                        if ( oTL.l ) {
+                        if (oTL.l) {
                             oTL.labels = oTL.l;
                         }
-                        if ( oTL.tt ) {
+                        if (oTL.tt) {
                             oTL.timeline = oTL.tt;
                         }
-                        for (i = 0; i < oTL.timeline.length; i++ ) {
+                        for (i = 0; i < oTL.timeline.length; i++) {
                             tw = oTL.timeline[i];
                             _mapTweenNames(tw);
                         }
@@ -7652,11 +8163,11 @@ jQuery.extend( jQuery.easing,
             }
         }
     };
-    
-    Edge.getPxValue = function(val) {
+
+    Edge.getPxValue = function (val) {
         if (!val) {
             return 0;
-        }   
+        }
         if (typeof(val) === "number") {
             return val;
         }
@@ -7666,30 +8177,30 @@ jQuery.extend( jQuery.easing,
         }
         return parseFloat(val);
     };
-    
-    Edge.mapContentToTranslate = function(aDom, htManagedIDs, htHasPxAni, htLeft, htTop) {
+
+    Edge.mapContentToTranslate = function (aDom, htManagedIDs, htHasPxAni, htLeft, htTop) {
         var i,
             oN,
             sId;
-        
-        for (i=0; i<aDom.length; i++) {
+
+        for (i = 0; i < aDom.length; i++) {
             oN = aDom[i];
             sId = "${_" + oN.id + "}";
-            
+
             if (htHasPxAni[sId]) {
-                
+
                 htManagedIDs[sId] = true;
-            
+
                 if (!oN.rect) {
                     oN.rect = oN.r;
                     oN.r = undefined;
                     if (!oN.rect) {
-                        oN.rect = [0,0,0,0];
+                        oN.rect = [0, 0, 0, 0];
                     }
                 }
-                
+
                 if (oN.rect) {
-                    
+
                     if (!oN.transform) {
                         oN.transform = oN.tf;
                         oN.tf = undefined;
@@ -7698,15 +8209,15 @@ jQuery.extend( jQuery.easing,
                         }
                     }
                     if (!oN.transform[0]) {
-                        oN.transform[0] = [0,0];
+                        oN.transform[0] = [0, 0];
                     }
-                    
+
                     if (Edge.isPx(oN.rect[0])) {
                         oN.transform[0][0] = Edge.getPxValue(oN.rect[0]);
                         htLeft[sId] = oN.transform[0][0];
                         oN.rect[0] = "0px";
                     }
-                    
+
                     if (Edge.isPx(oN.rect[1])) {
                         oN.transform[0][1] = Edge.getPxValue(oN.rect[1]);
                         htTop[sId] = oN.transform[0][1];
@@ -7714,24 +8225,24 @@ jQuery.extend( jQuery.easing,
                     }
                 }
             }
-                
+
             if (oN.children) {
                 Edge.mapContentToTranslate(oN.children, htManagedIDs, htHasPxAni, htLeft, htTop);
             }
-            else if(oN.c) {
+            else if (oN.c) {
                 Edge.mapContentToTranslate(oN.c, htManagedIDs, htHasPxAni, htLeft, htTop);
             }
         }
     };
-    
-    Edge.isPx = function(val) {
+
+    Edge.isPx = function (val) {
         if (val && typeof(val) === "string" && (val.indexOf("%") > 0 || val.indexOf("em") > 0 || val === "auto" || val === "null")) {
             return false;
         }
         return true;
     };
-    
-    Edge.mapSymToTranslate = function(sym) {
+
+    Edge.mapSymToTranslate = function (sym) {
         var sStateName,
             oState,
             sActorName,
@@ -7751,16 +8262,16 @@ jQuery.extend( jQuery.easing,
             bHasTxfm,
             htManagedIDs = {},
             htHasPxAni = {};
-        
-        
+
+
         //timelines
-        if ( sym.timelines ) {
-            for ( sTimelineName in sym.timelines ) {
-                if ( sym.timelines.hasOwnProperty( sTimelineName ) ) {
-                    oTimeline = sym.timelines[sTimelineName];                
+        if (sym.timelines) {
+            for (sTimelineName in sym.timelines) {
+                if (sym.timelines.hasOwnProperty(sTimelineName)) {
+                    oTimeline = sym.timelines[sTimelineName];
                     aTimeline = oTimeline.timeline;
-                    if ( aTimeline ) {
-                        for ( i = 0; i < aTimeline.length; i++ ) {
+                    if (aTimeline) {
+                        for (i = 0; i < aTimeline.length; i++) {
                             oTween = aTimeline[i].tween;
                             if (!oTween || (oTween[2] != "left" && oTween[2] != "top") || !Edge.isPx(oTween[3])) {
                                 continue;
@@ -7771,25 +8282,25 @@ jQuery.extend( jQuery.easing,
                 }
             }
         }
-        
+
         if (sym.content && sym.content.dom) {
             Edge.mapContentToTranslate(sym.content.dom, htManagedIDs, htHasPxAni, htLeft, htTop);
         }
-            
+
         for (sStateName in sym.states) {
             if (sym.states.hasOwnProperty(sStateName)) {
                 oState = sym.states[sStateName];
-                
+
                 for (sActorName in oState) {
                     if (oState.hasOwnProperty(sActorName) && htManagedIDs[sActorName]) {
                         aKeyframes = oState[sActorName];
-                        
+
                         aNewKeyframes = [];
-                        
+
                         bHasTxfm = false;
                         bHasLeft = false;
                         bHasTop = false;
-                        for (i=0;i<aKeyframes.length;i++) {
+                        for (i = 0; i < aKeyframes.length; i++) {
                             aKF = aKeyframes[i];
                             if ((aKF[1] === "left" || aKF[1] === "top") && Edge.isPx(aKF[2])) {
                                 bHasTxfm = true;
@@ -7814,30 +8325,30 @@ jQuery.extend( jQuery.easing,
                                 aNewKeyframes[aNewKeyframes.length] = aKeyframes[i];
                             }
                         }
-                        
+
                         if (bHasTxfm) {
                             if (!bHasLeft && htLeft[sActorName]) {
                                 aNewKeyframes[aNewKeyframes.length] = ["transform", "translateX", Edge.getPxValue(htLeft[sActorName]) + "px"];
                             }
                             if (!bHasTop && htTop[sActorName]) {
-                                aNewKeyframes[aNewKeyframes.length] = ["transform", "translateY",  Edge.getPxValue(htTop[sActorName]) + "px"];
+                                aNewKeyframes[aNewKeyframes.length] = ["transform", "translateY", Edge.getPxValue(htTop[sActorName]) + "px"];
                             }
                         }
-                        
+
                         oState[sActorName] = aNewKeyframes;
                     }
                 }
             }
         }
-        
+
         //timelines
-        if ( sym.timelines ) {
-            for ( sTimelineName in sym.timelines ) {
-                if ( sym.timelines.hasOwnProperty( sTimelineName ) ) {
-                    oTimeline = sym.timelines[sTimelineName];                
+        if (sym.timelines) {
+            for (sTimelineName in sym.timelines) {
+                if (sym.timelines.hasOwnProperty(sTimelineName)) {
+                    oTimeline = sym.timelines[sTimelineName];
                     aTimeline = oTimeline.timeline;
-                    if ( aTimeline ) {
-                        for ( i = 0; i < aTimeline.length; i++ ) {
+                    if (aTimeline) {
+                        for (i = 0; i < aTimeline.length; i++) {
                             oTween = aTimeline[i].tween;
                             if (!oTween || (oTween[2] != "left" && oTween[2] != "top") || !Edge.isPx(oTween[3])) {
                                 continue;
@@ -7845,133 +8356,136 @@ jQuery.extend( jQuery.easing,
                             if (!htManagedIDs[oTween[1]]) {
                                 continue;
                             }
-                            
+
                             if (oTween[2] === "left") {
                                 sNewPropName = "translateX";
                             }
                             else if (oTween[2] === "top") {
                                 sNewPropName = "translateY";
                             }
-                            
+
                             oTween[0] = "transform";
                             oTween[2] = sNewPropName;
-                        }        
+                        }
                     }
                 }
             }
         }
     };
-    
+
     Edge.mapToTranslate = function (symbolData) {
         var sym;
         if (!window.edge_authoring_mode) {
-            for ( symName in symbolData ) {
-                if ( symbolData.hasOwnProperty( symName ) ) {
+
+            //TBD: add checks for iOS
+
+            for (symName in symbolData) {
+                if (symbolData.hasOwnProperty(symName)) {
                     Edge.mapSymToTranslate(symbolData[symName]);
                 }
             }
         }
     };
-    
+
     /*
-    An Edge composition definition is the set of Symbol definitions for a composition.
-    You can have multiple Composition instances for each CompositionDefn
-    */
-    Edge.registerCompositionDefn = function( compId, symbolData, fonts, resources ) {
+     An Edge composition definition is the set of Symbol definitions for a composition.
+     */
+    Edge.registerCompositionDefn = function (compId, symbolData, fonts, resources, opts) {
         if (window.edge_authoring_mode && window.edge_symbol_import_mode && window.edge_comp_id) {
             Edge.importSymbolDefinitions(window.edge_comp_id, symbolData, fonts, resources);
             return;
         }
-        if ( compId && compId.length > 0 && !Edge.compositionDefns[compId] ) {
+        if (compId && compId.length > 0 && !Edge.compositionDefns[compId]) {
             // Overwriting not permitted - since there are APIs that alter the definition, this could lead to nasty
             // bugs if somebody includes a js file twice.
-            
-            Edge.compositionDefns[compId] = {symbolData:symbolData, resources: resources, readyToLaunch: false};
+
+            Edge.compositionDefns[compId] = {symbolData: symbolData, resources: resources, readyToLaunch: false, opts: opts};
             Edge.registerSymbolDefns(compId, symbolData);
 
             Edge.mapToTranslate(symbolData);
-            
+
             Edge.compositionFonts[compId] = fonts;
-            Edge.registerFonts( fonts );
+            Edge.compositionOpts[compId] = opts || {};
+            Edge.registerFonts(fonts);
         }
     };
 
-    function getCompositionSymbolDefns( compId ) {
+    function getCompositionSymbolDefns(compId) {
         return Edge.compositionDefns[compId].symbolData;
     }
 
     Edge.getCompositionSymbolDefns = getCompositionSymbolDefns;
 
-    function getCompositionResources( compId ) {
+    function getCompositionResources(compId) {
         return Edge.compositionDefns[compId].resources;
     }
 
     Edge.getCompositionResources = getCompositionResources;
 
-    Edge.getComposition = function( compId ) {
-        if ( !compId ) {
+    Edge.getComposition = function (compId) {
+        if (!compId) {
             return;
         }
         return Edge.compositions[compId];
     };
 
-    Edge.registerCompositionReadyHandler = function( compId, fn, opts ) {
+    Edge.registerCompositionReadyHandler = function (compId, fn, opts) {
         opts = opts || {};
-        if ( window.edge_authoring_mode && !(opts._tool || window.edge_remote_authoring) ) {
+        if (window.edge_authoring_mode && !(opts._tool || window.edge_remote_authoring)) {
             return;
         }
-        if ( !compId || !fn ) {
+        if (!compId || !fn) {
             return;
         }
-        if ( Edge.compositions[compId] ) {
-            Edge.compositions.ready( fn );
+        if (Edge.compositions[compId]) {
+            Edge.compositions.ready(fn);
         }
         else {
             Edge.compositionReadyHandler[compId] = Edge.compositionReadyHandler[compId] || [];
             var handlers = Edge.compositionReadyHandler[compId];
-            handlers.push( fn );
+            handlers.push(fn);
         }
     };
 
     // Composition private methods - use "call(this, ...)" to call these
     // By making them functions rather than properties on prototype Closure compiler can minify the names
-    _createSymbolChild = function(symbolName, parentSelector, index, variables) {
-        if ( !symbolName || !parentSelector ) {
+    function _createSymbolChild(symbolName, parentSelector, index, variables) {
+        if (!symbolName || !parentSelector) {
             return;
         }
-        if ( !this.symbolInstances || !this.symbolDefns[symbolName] ) {
+        if (!this.symbolInstances || !this.symbolDefns[symbolName]) {
             return;
         }
         var createdSymbolInstances = [];
-        var $parentSelector = $( parentSelector );
+        var $parentSelector = $(parentSelector);
         var comp = this;
-        $parentSelector.each( function() {
-            var $this = $( this );
-            var newEle = document.createElement( 'div' );
-            if ( (index || index === 0) && $this.children().eq( index )[0] ) {
+        $parentSelector.each(function () {
+            var $this = $(this);
+            var newEle = document.createElement('div');
+            if ((index || index === 0) && $this.children().eq(index)[0]) {
                 var $children = $this.children();
-                if ( index < 0 ) {
-                    $children.eq( index ).after( newEle );
+                if (index < 0) {
+                    $children.eq(index).after(newEle);
                 }
                 else {
-                    $children.eq( index ).before( newEle );
+                    $children.eq(index).before(newEle);
                 }
             }
             else {
-                $this.append( newEle );
+                $this.append(newEle);
             }
             // Disabled as input to control autoPlay at instance level
             var autoPlayTimelines;
 
             var opts = {}, autoPlay;
-            if ( autoPlayTimelines && typeof autoPlayTimelines === 'object' ) {
+            if (autoPlayTimelines && typeof autoPlayTimelines === 'object') {
                 opts.autoPlay = autoPlayTimelines;
             }
-            else if ( typeof autoPlayTimelines === 'string' ) {
-                if ( autoPlayTimelines === "false" ) {
+            else if (typeof autoPlayTimelines === 'string') {
+                if (autoPlayTimelines === "false") {
                     autoPlay = false;
                 }
-                else if ( autoPlayTimelines === "true" ) {
+                else if (autoPlayTimelines === "true") {
                     autoPlay = true;
                 }
             }
@@ -7979,61 +8493,72 @@ jQuery.extend( jQuery.easing,
                 autoPlay = autoPlayTimelines;
             }
             opts.variables = variables;
-            var symbInstance = comp.convertElementToSymbol( newEle, symbolName, opts );
-            if ( symbInstance ) {
-                if ( typeof autoPlay === 'boolean' ) {
-                    symbInstance.setAutoPlay( autoPlay );
+            var symbInstance = comp.convertElementToSymbol(newEle, symbolName, opts);
+            if (symbInstance) {
+                if (typeof autoPlay === 'boolean') {
+                    symbInstance.setAutoPlay(autoPlay);
                 }
 
                 //go through and display any of the items that are supposed to be displayed
-                comp.instanceReady( symbInstance );
+                comp.instanceReady(symbInstance);
 
-                createdSymbolInstances.push( symbInstance );
+                createdSymbolInstances.push(symbInstance);
             }
-        } );
+        });
 
-        if ( this.readyCalled ) {
-            for ( var i = 0; i < createdSymbolInstances.length; i++ ) {
-                createdSymbolInstances[i]._playAuto( true );
+        if (this.readyCalled) {
+            for (var i = 0; i < createdSymbolInstances.length; i++) {
+                createdSymbolInstances[i]._playAuto(true);
             }
         }
         return createdSymbolInstances;
-    };
-    
+    }
+
     var addIdsToTimelines;
     /*
      An Edge.Composition object is a composition, or to put it another way, a self-contained animation. You can have multiple Edge
      objects in a page. Each has its own set of Symbol definitions, instances, and is attached to a node (the stage)
-     in the DOM. You can have multiple Composition instances for each CompositionDefn
+     in the DOM.
      */
-    var Composition = Edge.Composition = function( compId, attachments, opts ) {
+    var Composition = Edge.Composition = function (compId, attachments, opts) {
         opts = opts || {};
         //no-op when running inside a tool, unless called by the tool or on a remote
-        if ( window.edge_authoring_mode && !(opts._tool || window.edge_remote_authoring) ) {
+        if (window.edge_authoring_mode && !(opts._tool || window.edge_remote_authoring)) {
             return;
         }
-        Edge.Notifier.call( this );
-        $.extend( this, Edge.Composition.config );
-        $.extend( this, opts );
+        Edge.Notifier.call(this);
+        $.extend(this, Edge.Composition.config);
+        $.extend(this, opts);
 
         /*jshint undef:false */
         var className = "." + compId,
-                $ele,
-                bHasSymbolsWithAttachments = false,
-                i = 0,
-                symbolName, symbolInstance,
-                comp = this,
-                readyHandlers = Edge.compositionReadyHandler[compId],
-                resources = Edge.compositionDefns[compId].resources;
-                symbolData = this.symbolDefns = getCompositionSymbolDefns( compId );
+            $ele,
+            bHasSymbolsWithAttachments = false,
+            i = 0,
+            symbolName, symbolInstance,
+            comp = this,
+            readyHandlers = Edge.compositionReadyHandler[compId],
+            resources = Edge.compositionDefns[compId].resources;
+        symbolData = this.symbolDefns = getCompositionSymbolDefns(compId);
         this.compId = compId;
 
         var evt = this._createEvent();
-        this.notifyObservers( "onPreCompInit", evt );
+        this.notifyObservers("onPreCompInit", evt);
         var postEvt = this._createEvent();
-        if ( !evt.performDefaultAction ) {
-            this.notifyObservers( "onPostCompInit", postEvt );
+        if (!evt.performDefaultAction) {
+            this.notifyObservers("onPostCompInit", postEvt);
             return;
+        }
+
+        if (!window.edge_authoring_mode) {
+            data = symbolData.stage;
+            this.alreadyWrapped = isStageWrapped($(className));
+            if (data && (data.scaleToFit === 'height' || data.scaleToFit === 'width' || data.scaleToFit === 'both')) {
+                wrapForStageScaling($(className));
+            }
+            if (data && (data.centerStage === 'vertical' || data.centerStage === 'horizontal' || data.centerStage === 'both')) {
+                centerTheStage($(className), data);
+            }
         }
 
         this.symbolInstances = [];
@@ -8044,120 +8569,120 @@ jQuery.extend( jQuery.easing,
         this.$loadCalled = window.AdobeEdge.loaded;
         Edge.compositions[compId] = this; // We only support one comp for each defn at this time
         this.compReadyCalled = false;
+        this.preloadAudio = Edge.compositionOpts[compId].preloadAudio;
 
         if (resources) {
-            for (i=0; i<resources.length; i++) {
+            for (i = 0; i < resources.length; i++) {
                 this.requestImage(resources[i]);
             }
         }
 
+        addIdsToTimelines(symbolDefns);   // make sure every tl object has a unique id
 
-        addIdsToTimelines( symbolDefns );   // make sure every tl object has a unique id
-
-        for ( symbolName in attachments ) {
-            if ( attachments.hasOwnProperty( symbolName ) ) {
-                $ele = $( attachments[symbolName] );
-                if ( $ele.size() > 0 ) {
+        for (symbolName in attachments) {
+            if (attachments.hasOwnProperty(symbolName)) {
+                $ele = $(attachments[symbolName]);
+                if ($ele.size() > 0) {
                     bHasSymbolsWithAttachments = true;
                     break;
                 }
             }
         }
 
-        if ( !bHasSymbolsWithAttachments ) {
-            var oBody = $( 'body' );
-            $( oBody ).addClass( compId );
+        if (!bHasSymbolsWithAttachments) {
+            var oBody = $('body');
+            $(oBody).addClass(compId);
         }
 
-        for ( symbolName in attachments ) {
-            if ( attachments.hasOwnProperty( symbolName ) ) {
-            $ele = $( attachments[symbolName] );
-            /*jshint loopfunc: true */
-            $ele.each( function() {
-                symbolInstance = comp.convertElementToSymbol( this, symbolName );
-            } );
-        }
+        for (symbolName in attachments) {
+            if (attachments.hasOwnProperty(symbolName)) {
+                $ele = $(attachments[symbolName]);
+                /*jshint loopfunc: true */
+                $ele.each(function () {
+                    symbolInstance = comp.convertElementToSymbol(this, symbolName);
+                });
+            }
         }
 
-        if ( window.AdobeEdge.loaded ) {
-            if ( comp.imageRequestCount <= 0 ) {
+        if (window.AdobeEdge.loaded) {
+            if (comp.imageRequestCount <= 0) {
                 comp.callReadyList();
             }
         }
         else {
-            $( window ).load( function() {
+            $(window).load(function () {
                 comp.$loadCalled = true;
-                if ( comp.imageRequestCount <= 0 ) {
+                if (comp.imageRequestCount <= 0) {
                     comp.callReadyList();
                 }
-            } );
+            });
         }
-        if ( readyHandlers ) {
-            for ( i = 0; i < readyHandlers.length; i++ ) {
-                this.ready( readyHandlers[i] );
+        if (readyHandlers) {
+            for (i = 0; i < readyHandlers.length; i++) {
+                this.ready(readyHandlers[i]);
             }
         }
-        this.notifyObservers( "onPostCompInit", postEvt );
+        this.notifyObservers("onPostCompInit", postEvt);
 
     };
 
     Edge.Composition.config = Edge.Composition.config || {};
 
-    $.extend( Composition.prototype, Edge.Notifier.prototype, {
+    $.extend(Composition.prototype, Edge.Notifier.prototype, {
         // Public (published) API
-        play: function( _tool ) {
+        play: function (_tool) {
 
             //no-op when running inside a tool, unless called by the tool
-            if ( window.edge_authoring_mode && !_tool ) {
+            if (window.edge_authoring_mode && !_tool) {
                 return;
             }
 
-            if ( typeof Edge.autoPlay === 'undefined' || Edge.autoPlay ) {
+            if (typeof Edge.autoPlay === 'undefined' || Edge.autoPlay) {
                 var cnt = this.symbolInstances.length;
-                for ( var i = 0; i < cnt; i++ ) {
+                for (var i = 0; i < cnt; i++) {
                     var sym = this.symbolInstances[i];
                     sym._playAuto();
                 }
             }
         },
-        getSymbols: function(symbolName) {
-            if (!symbolName) {  
+        getSymbols: function (symbolName) {
+            if (!symbolName) {
                 return this.symbolInstances;
             }
-            
+
             var instances = [];
-            if ( !this.symbolInstances ) {
+            if (!this.symbolInstances) {
                 return instances;
             }
-            if ( this.symbolDefns.hasOwnProperty( symbolName ) ) {
+            if (this.symbolDefns.hasOwnProperty(symbolName)) {
                 var cnt = this.symbolInstances.length;
-                for ( var i = 0; i < cnt; i++ ) {
-                    if ( this.symbolInstances[i].getSymbolTypeName() === symbolName ) {
-                        instances.push( this.symbolInstances[i] );
+                for (var i = 0; i < cnt; i++) {
+                    if (this.symbolInstances[i].getSymbolTypeName() === symbolName) {
+                        instances.push(this.symbolInstances[i]);
                     }
                 }
             }
             return instances;
         },
-        ready: function( fn ) {
-            if ( this.readyCalled ) {
+        ready: function (fn) {
+            if (this.readyCalled) {
                 fn.call();
             }
             else {
-                if ( this.readyList ) {
-                    this.readyList.push( fn );
+                if (this.readyList) {
+                    this.readyList.push(fn);
                 }
             }
         },
-        getCompId: function() {
+        getCompId: function () {
             return this.compId;
         },
         // end public api
 
-        requestImage : function( imageURL ) {
-            if(isOpera()) {
+        requestImage: function (imageURL) {
+            if (isOpera()) {
                 // Opera 12 has a bug that it doesn't call load handlers for svg imgs
-                if(/\.svg$/.test(imageURL)){
+                if (/\.svg$/.test(imageURL)) {
                     return null;
                 }
             }
@@ -8165,172 +8690,245 @@ jQuery.extend( jQuery.easing,
             var comp = this,
                 img = new Image(),
                 $img = $(img);
-            
-            this.imageRequestList.push( img );
+
+            this.imageRequestList.push(img);
             function handler() {
                 $img.unbind("load");
-            	$img.unbind("error");
-            	for (var i=0; i<comp.imageRequestList.length; i++) {
-            		if (comp.imageRequestList[i] === img) {
-            			comp.imageRequestList.splice(i, 1);
-            			break;
-            		}
-            	}
+                $img.unbind("error");
+                for (var i = 0; i < comp.imageRequestList.length; i++) {
+                    if (comp.imageRequestList[i] === img) {
+                        comp.imageRequestList.splice(i, 1);
+                        break;
+                    }
+                }
                 comp.imageRequestCount--;
-                if ( comp.imageRequestCount <= 0 && comp.$loadCalled ) {
-                    setTimeout( function() {
+                if (comp.imageRequestCount <= 0 && comp.$loadCalled) {
+                    setTimeout(function () {
                         comp.callReadyList();
-                    }, 0 );
+                    }, 0);
                 }
             }
-            
-            $img.load( handler );
-            $img.error( handler );
+
+            $img.load(handler);
+            $img.error(handler);
             img.src = imageURL;
             return null;
         },
-        restoreDisplay:function( ele, bInner ) {
-            var sym = this;
-			
-			if(!bInner) {
-				$(".edgeLoad-" + sym.compId).each( function( i, eleChild ) {
-					$( eleChild ).removeClass("edgeLoad-" + sym.compId);
-					
-					var dispOrig = $( eleChild ).data( 'dispOrig' );
-					if(typeof dispOrig !== "undefined") {
-						eleChild.style.display = dispOrig;
-					}
-				} );
-			}
+        requestAudio: function (aAudioURLs) {
+            var bResult = true;
+            if (this.preloadAudio !== false) {
+                if (isiOS())
+    				return bResult;
+
+                var comp = this,
+                    aud = new Audio(),
+                    $aud = $(aud),
+                    aAudioURLs,
+                    i,
+                    j,
+                    ext;
+
+                function handler() {
+                    //$aud.unbind("load");
+                    //$aud.unbind("error");
+                    $aud.off("canplaythrough");
+                    for (i = 0; i < comp.imageRequestList.length; i++) {
+                        if (comp.imageRequestList[i] === aud) {
+                            comp.imageRequestList.splice(i, 1);
+                            break;
+                        }
+                    }
+                    comp.imageRequestCount--;
+                    if (comp.imageRequestCount <= 0 && comp.$loadCalled) {
+                        setTimeout(function () {
+                            comp.callReadyList();
+                        }, 0);
+                    }
+                }
+
+                var bSupportedAudioFound = false;
+
+                for (j = 0; j < aAudioURLs.length; j++) {
+                    // get the extension
+                    ext = aAudioURLs[j].split('.');
+                    ext = ext[ext.length - 1].toLowerCase();
+                    if (Edge.supported.audio[ext]) {
+                        this.imageRequestCount++;
+                        this.imageRequestList.push(aud);
+                        /*
+                        The most reliable place to give ok to load the comp
+                        is when we handle 'canplaythrough'.
+                        if we give out signal only when load event happened,
+                        then we end up starting to play audio when the buffer
+                        doesn't have enough data to play.
+                        */
+                        $aud.on("canplaythrough", handler);
+                        aud.src = aAudioURLs[j];
+                        
+                        bSupportedAudioFound = true;
+                        break;
+                    }
+                }
+
+                if (!bSupportedAudioFound)
+                    bResult = false;
+
+            }
+            return bResult;
         },
-        installEffectors:function($ele, inst, bInner) {
-            
+
+        restoreDisplay: function (ele, bInner) {
+            var sym = this;
+
+            if (!bInner) {
+                $(".edgeLoad-" + sym.compId).each(function (i, eleChild) {
+                    $(eleChild).removeClass("edgeLoad-" + sym.compId);
+
+                    var dispOrig = $(eleChild).data('dispOrig');
+                    if (typeof dispOrig !== "undefined") {
+                        eleChild.style.display = dispOrig;
+                    }
+                });
+            }
+        },
+        installEffectors: function ($ele, inst, bInner) {
+
             var aE = inst.effectors;
             var sym = this;
             var ele = $ele[0] || $ele;
-            
-            if(!bInner && aE && aE["#" + ele.id]) {
+
+            if (!bInner && aE && aE["#" + ele.id]) {
                 Edge.Effectors.attach(sym, ele, aE["#" + ele.id]);
             }
-            $( ele ).children().each( function( i, eleChild ) {
-                if(aE && aE["#" + eleChild.id]) {
+            $(ele).children().each(function (i, eleChild) {
+                if (aE && aE["#" + eleChild.id]) {
                     Edge.Effectors.attach(sym, eleChild, aE["#" + eleChild.id]);
                 }
                 sym.installEffectors(eleChild, inst, true);
-            } );
+            });
         },
-        instanceReady:function( symInst ) {
-            
-            var stg = $( symInst.element );
-            if ( stg ) {
-                if(Edge.Effectors) {
-                    this.installEffectors( stg, symInst );
+        instanceReady: function (symInst) {
+
+            var stg = $(symInst.element);
+            if (stg) {
+                if (Edge.Effectors) {
+                    this.installEffectors(stg, symInst);
                 }
-                this.restoreDisplay( stg );
+                this.restoreDisplay(stg);
             }
         },
-        callReadyList: function() {
-            if(this.readyCalled){
+        callReadyList: function () {
+            var data, instance, i;
+            if (this.readyCalled) {
                 return;
             }
             this.imageRequestList = [];
             this.readyCalled = true;
 
             // Let the preloader know we're ready to go
-            if ( Edge.preloadComplete && Edge.preloadComplete[this.compId] ) {
-                Edge.preloadComplete[this.compId]( [this.compId] );
+            if (Edge.preloadComplete && Edge.preloadComplete[this.compId]) {
+                Edge.preloadComplete[this.compId]([this.compId]);
             }
 
-            for ( var i = 0; i < this.symbolInstances.length; i++ ) {
-                _goToInitialState.call(this.symbolInstances[i]);
-                this.instanceReady( this.symbolInstances[i] );
+            for (i = 0; i < this.symbolInstances.length; i++) {
+                instance = this.symbolInstances[i];
+                _goToInitialState.call(instance);
+                this.instanceReady(instance);
+            }
+
+
+            for (i = 0; i < this.symbolInstances.length; i++) {
+                instance = this.symbolInstances[i];
+                data = instance.options.data;
+                if (!window.edge_authoring_mode && (data.scaleToFit === 'height' || data.scaleToFit === 'width' || data.scaleToFit === 'both')) {
+                    bindStageScaling(instance);
+                }
             }
 
             var evt;
             // Fire compositionReady before we do any readyHandlers, since
             // readyList includes autoplay
-            if ( !this.compReadyCalled ) {
+            if (!this.compReadyCalled) {
                 this.compReadyCalled = true;
-                evt = $.Event( "compositionReady" );
+                evt = $.Event("compositionReady");
                 evt.compId = this.getCompId();
-                $( document ).trigger( evt );
+                $(document).trigger(evt);
             }
 
-
-            while ( this.readyList.length > 0 ) {
+            while (this.readyList.length > 0) {
                 this.readyList.shift().call();
             }
 
             // 'loaded' is deprecated and not documented as of Preview 4
-            evt = $.Event( "loaded" );
+            evt = $.Event("loaded");
             evt.compId = this.getCompId();
-            $( document ).trigger( evt );
+            $(document).trigger(evt);
 
         },
-        getStage: function() {
-            return Symbol.get( $( "." + this.getCompId() ) );
+        getStage: function () {
+            return Symbol.get($("." + this.getCompId()));
         },
-        createSymbolChild: function( symbolName, parentSelector, index, variables ) {
+        createSymbolChild: function (symbolName, parentSelector, index, variables) {
             var aSymbols = _createSymbolChild.call(this, symbolName, parentSelector, index, variables);
             if (aSymbols && aSymbols.length > 0) {
                 var parentSymbol = Symbol.get(parentSelector);
-                if (!parentSymbol)
+                if (!parentSymbol) {
                     parentSymbol = Symbol.getParentSymbol(parentSelector);
+                }
                 if (parentSymbol) {
-                    for(var i=0;i< aSymbols.length;i++) {
+                    for (var i = 0; i < aSymbols.length; i++) {
                         _addChildSymbol.call(parentSymbol, aSymbols[i]);
                     }
-                }   
+                }
             }
             return aSymbols;
         },
-        convertElementToSymbol: function( sSelector, sSymName, opts ) {
-            if ( !sSelector || !$( sSelector ) ) {
+        convertElementToSymbol: function (sSelector, sSymName, opts) {
+            if (!sSelector || !$(sSelector)) {
                 return;
             }
 
-            if ( !this.symbolInstances || !this.symbolDefns[sSymName] ) {
+            if (!this.symbolInstances || !this.symbolDefns[sSymName]) {
                 return;
             }
 
             opts = opts || {};
             opts.regenerateID = opts.regenerateID || true;
-            var symbInstance = new Symbol( $( sSelector ), { data: this.symbolDefns[sSymName], composition: this, opts: opts} );
-            this.symbolInstances.push( symbInstance );
+            var symbInstance = new Symbol($(sSelector), { data: this.symbolDefns[sSymName], composition: this, opts: opts});
+            this.symbolInstances.push(symbInstance);
 
             return symbInstance;
         },
-        removeSymbol: function( sSelector, opts ) {
-            if ( !this.symbolInstances ) {
+        removeSymbol: function (sSelector, opts) {
+            if (!this.symbolInstances) {
                 return;
             }
 
-            var symInstance = Symbol.get( sSelector );
-            if ( symInstance ) {
-                symInstance.deleteSymbol( opts );
+            var symInstance = Symbol.get(sSelector);
+            if (symInstance) {
+                symInstance.deleteSymbol(opts);
             }
         },
-        _createEvent: function( opts ) {
+        _createEvent: function (opts) {
             var e = { composition: this, compId: this.compId, performDefaultAction: true };
-            $.extend( e, opts );
+            $.extend(e, opts);
             return e;
         }
 
-    } );
+    });
 
-    function launchComposition( compId ) {
+    function launchComposition(compId) {
         var comp;
         var defn = Edge.compositionDefns[compId];
-    
-        if ( defn && !(defn.launched) && defn.okToLaunch && defn.launchCalled ) {
+
+        if (defn && !(defn.launched) && defn.okToLaunch && defn.launchCalled) {
             defn.launched = true;
 
-            if ( !window.edge_authoring_mode || window.edge_remote_authoring ) {
-                if ( !window.edge_remote_authoring ) {
-                    comp = new Edge.Composition( compId, {stage: "." + compId}, {} );
+            if (!window.edge_authoring_mode || window.edge_remote_authoring) {
+                if (!window.edge_remote_authoring) {
+                    comp = new Edge.Composition(compId, {stage: "." + compId}, {});
                 } else {
-                    //Edge.autoPlay = false;
-                    comp = new Edge.Composition( compId, {stage: "." + compId}, {} );
+                    comp = new Edge.Composition(compId, {stage: "." + compId}, {});
                     window.BYOD.initialize();
                 }
 
@@ -8340,63 +8938,59 @@ jQuery.extend( jQuery.easing,
                 // clip in Safari 534 and Chrome 535
                 // cursor in Safari 534
                 var isWebkit = ( 'webkitAppearance' in document.documentElement.style );
-                if ( isWebkit && !comp.getStage().stageIsBody) {
+                if (isWebkit && !comp.getStage().stageIsBody) {
                     var doc = document;
-                    var styleEle = doc.createElement( 'style' );
-                    var head = $( "head" )[0];
-                    if ( head ) {
-                        head.insertBefore( styleEle, head.firstChild ); // doc.styleSheets.length - 1
+                    var styleEle = doc.createElement('style');
+                    var head = $("head")[0];
+                    if (head) {
+                        head.insertBefore(styleEle, head.firstChild); // doc.styleSheets.length - 1
                         var sel = "." + compId + ", ." + compId + " *";
-                        if ( typeof doc.styleSheets[0] !== "undefined" ) {
-                            doc.styleSheets[0].insertRule( sel + "{-webkit-transform:translateX(0px);}", 0 );
+                        if (typeof doc.styleSheets[0] !== "undefined") {
+                            doc.styleSheets[0].insertRule(sel + "{-webkit-transform:translateX(0px);}", 0);
                         }
                     }
                 }
 
                 /** * Adobe Edge Timeline Launch */
-                comp.ready( function() {
-                    if ( !window.edge_authoring_mode || window.edge_remote_authoring ) {
+                comp.ready(function () {
+                    if (!window.edge_authoring_mode || window.edge_remote_authoring) {
                         comp.play();
                     }
-                } );
+                });
             }
             else {
 
             }
-
-            /* comp = new Edge.Composition(compId, {stage: "." + compId}, {});
-             comp.ready(function() {
-             comp.play();
-             });*/
         }
     }
 
-    Edge.launchComposition = function( compId ) {
+    Edge.launchComposition = function (compId) {
         var defn = Edge.compositionDefns[compId];
-        if ( defn ) {
+        if (defn) {
             defn.launchCalled = true;
-            launchComposition( compId );
-        }
-    };
-    Edge.okToLaunchComposition = function( compId ) {
-        var defn = Edge.compositionDefns[compId];
-        if ( defn ) {
-            defn.okToLaunch = true;
-            launchComposition( compId );
+            launchComposition(compId);
         }
     };
 
-    addIdsToTimelines = function( symbolDefns ) {
-        for ( var symbolName in symbolDefns ) {
-            if ( symbolDefns.hasOwnProperty( symbolName ) ) {
-                if ( symbolDefns[symbolName].timelines ) {
-                    for ( var tlName in symbolDefns[symbolName].timelines ) {
-                        if ( symbolDefns[symbolName].timelines.hasOwnProperty( tlName ) ) {
+    Edge.okToLaunchComposition = function (compId) {
+        var defn = Edge.compositionDefns[compId];
+        if (defn) {
+            defn.okToLaunch = true;
+            launchComposition(compId);
+        }
+    };
+
+   function addIdsToTimelines(symbolDefns) {
+        for (var symbolName in symbolDefns) {
+            if (symbolDefns.hasOwnProperty(symbolName)) {
+                if (symbolDefns[symbolName].timelines) {
+                    for (var tlName in symbolDefns[symbolName].timelines) {
+                        if (symbolDefns[symbolName].timelines.hasOwnProperty(tlName)) {
                             var tl = symbolDefns[symbolName].timelines[tlName].timeline;
                             var cnt = tl.length;
-                            for ( var i = 0; i < cnt; i++ ) {
+                            for (var i = 0; i < cnt; i++) {
                                 var obj = tl[i];
-                                if ( !obj.id ) {
+                                if (!obj.id) {
                                     obj.id = makeUniqueID();
                                 }
                             }
@@ -8405,64 +8999,61 @@ jQuery.extend( jQuery.easing,
                 }
             }
         }
-    };
+    }
 
-    Edge.play = function( _tool ) {
-
+    Edge.play = function (_tool) {
         //no-op when running inside a tool, unless called by the tool
-        if ( window.edge_authoring_mode && !_tool ) {
+        if (window.edge_authoring_mode && !_tool) {
             return;
         }
 
-        if ( typeof Edge.autoPlay === 'undefined' || Edge.autoPlay ) {
+        if (typeof Edge.autoPlay === 'undefined' || Edge.autoPlay) {
             var cnt = this.symbolInstances.length;
-            for ( var i = 0; i < cnt; i++ ) {
+            for (var i = 0; i < cnt; i++) {
                 var sym = symbolInstances[i];
                 var autoPlay = sym.options.data.autoPlay;
-                if ( typeof autoPlay === "string" && autoPlay !== "true" ) {
-                    sym.play( autoPlay );
-                } else if ( typeof autoPlay === "undefined" || autoPlay === true || autoPlay === "true" ) {
-                    sym.play( "Default Timeline" ); // Play default for now until tool is updated to populate autoPlay
+                if (typeof autoPlay === "string" && autoPlay !== "true") {
+                    sym.play(autoPlay);
+                } else if (typeof autoPlay === "undefined" || autoPlay === true || autoPlay === "true") {
+                    sym.play("Default Timeline"); // Play default for now until tool is updated to populate autoPlay
                 }
             }
         }
     };
 
-// Logging to external logger
+// Logging to external logger - stubbed out here, and monkey-patched in tool
     /**
      * Log a debug message to an external logger app. Only functional in authoring environment
      * @param msg Message to log
      */
-    Edge.logDebug = function( msg ) {
+    Edge.logDebug = function (msg) {
     };
     /**
      * Log an info message to an external logger app. Only functional in authoring environment
      * @param msg Message to log
      */
-    Edge.logInfo = function( msg ) {
+    Edge.logInfo = function (msg) {
     };
     /**
      * Log a warning message to an external logger app. Only functional in authoring environment
      * @param msg Message to log
      */
-    Edge.logWarn = function( msg ) {
+    Edge.logWarn = function (msg) {
     };
     /**
      * Log an error message to an external logger app. Only functional in authoring environment
      * @param msg Message to log
      */
-    Edge.logError = function( msg ) {
+    Edge.logError = function (msg) {
     };
     /**
      * Log a fatal error message to an external logger app. Only functional in authoring environment
      * @param msg Message to log
      */
-    Edge.logFatal = function( msg ) {
+    Edge.logFatal = function (msg) {
     };
 
-})( jQuery, AdobeEdge );
-
-// Filename: edge.touch.js
+})(jQuery, AdobeEdge);
 /*
 * http://jquerymobile.com
 *
@@ -8471,6 +9062,35 @@ jQuery.extend( jQuery.easing,
 * http://jquery.org/license
 *
 */
+
+//Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+//
 
 (function( $, window, undefined ) {
 	// add new event shortcuts
@@ -8578,8 +9198,34 @@ jQuery.extend( jQuery.easing,
 	});
 
 })( jQuery, this );
-
-// Filename: edge.declare.js
+/// edge.declare.js
+//
+// Copyright (c) 2011-2013. Adobe Systems Incorporated.
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//   * Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//   * Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//   * Neither the name of Adobe Systems Incorporated nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 (function ($, Edge) {
     
@@ -8603,7 +9249,7 @@ jQuery.extend( jQuery.easing,
         var longShortNames = [
             ["children", "c"],
             ["rect", "r"],
-            ["sizeRange", "sr"],
+            ["sizeRange", "zr"],
             ["borderRadius", "br"],
             ["clip", "cl"],
             ["alt", "al"],
@@ -8734,6 +9380,9 @@ jQuery.extend( jQuery.easing,
                 
                 if(oN.display) {
                     eleNew.style.display = oN.display;
+                    if (sType === "audio" || sType === "video") {
+                        $eleNew.attr("controls", oN.display === "none" ? null : "controls");
+                    }
                 }
                 
                 if(!window.edge_authoring_mode) {
@@ -8790,9 +9439,13 @@ jQuery.extend( jQuery.easing,
                 if(oN.overflow == "hidden" || oN.overflow == "scroll") {
                     $eleNew.css("text-overflow", "clip");
                 }
+                else {
+                    //TBD: not sure aobut this...
+                    //$eleNew.css("text-overflow", "elipsis");
+                }
             }
             
-            if(oN.autoOrient) {
+            if(oN.autoOrient && oN.autoOrient !== 'false') {
                 $.data($eleNew[0], "doAutoOrient", "true");
             }
             
@@ -8838,14 +9491,25 @@ jQuery.extend( jQuery.easing,
             
             //source (sr)
             if(oN.sr) {
+
                 if(oN.sr.length == 1) {
                     $eleNew.attr("src", oN.sr[0]);
+                    if(!comp.requestAudio([oN.sr[0]])){
+                        console.log("There was no supported audio!!!");
+                        return null;
+                    }
                 }
                 else {
+                    var aSources = new Array();
                     for(var iS=0;iS<oN.sr.length;iS++) {
+                        aSources.push(oN.sr[iS]);
                         var eleSrc = document.createElement("source");
                         $(eleSrc).attr("src",oN.sr[iS]);
                         eleNew.appendChild(eleSrc);
+                    }
+                    if(!comp.requestAudio(aSources)){
+                        console.log("There was no supported audio!!!");
+                        return null;
                     }
                 }
             }
@@ -8872,6 +9536,9 @@ jQuery.extend( jQuery.easing,
                     $eleNew.css("border-bottom-right-radius", oN.br[2]);
                     $eleNew.css("border-bottom-left-radius", oN.br[3]);
                 }
+
+                //$eleNew.css("-webkit-border-radius", formatUnits(oN.br[0]));
+                //$eleNew.css("-moz-border-radius", formatUnits(oN.br[0]));
             }
 
 
@@ -8922,7 +9589,7 @@ jQuery.extend( jQuery.easing,
                     else {
                         transforms += " rotate(" + tf[1][0] + "deg)";
                     }
-                    transforms += " skewX(" + tf[2][0] + "deg skewY(" + tf[2][1] + "deg)";
+                    transforms += " skewX(" + tf[2][0] + "deg) skewY(" + tf[2][1] + "deg)";
                     if ( tf[3][2] != 1 ) {
                         transforms += " scale3d(" + tf[3][0] + "," + tf[3][1] + "," + tf[3][2] + ")";
                     }
@@ -8940,6 +9607,10 @@ jQuery.extend( jQuery.easing,
                     $eleNew.css("transform", val);
                 }
             }
+            /*else {
+                //TBD: this fixes an issue in webkit with on-stage selection... should probably be applied only on the stage
+                //eleNew.style.webkitTransform = "translateZ(0)";
+            }*/
 
             //boxShadow (sh)
             if(oN.boxShadow) {
@@ -9173,6 +9844,7 @@ jQuery.extend( jQuery.easing,
                                         propValue = propValue + " " + oN_fill[5];
                                     }
                                     $eleNew.css("background-size", propValue);
+                                    $eleNew.css("-webkit-background-size", propValue);//try to avoid scaling images with transform scale
                                 }
                                comp.requestImage(imgSrc);
                             }
@@ -9203,7 +9875,20 @@ jQuery.extend( jQuery.easing,
                     eleParent.appendChild(eleNew);
                 }
             }
-
+            
+            // Do not play audio on autoplay if creating the element in the app (necessary for creating symbol instances)
+            if(window.edge_authoring_mode && (sType === "audio" || sType === "video")) {
+                if (eleNew.readyState == 4)
+                    eleNew.pause();
+                else
+                    // Not ready to be touched, but we still have to pause it asap. Wire to an event. 
+                    var aud = eleNew;
+                    var $node = $(aud);
+                    $node.one('loadedmetadata', function() {
+                         aud.pause();
+                    });
+                }
+            
             return eleNew;
         }
 
@@ -9231,6 +9916,7 @@ jQuery.extend( jQuery.easing,
                 case 'video':
                 case 'audio':
                     eleNew = doCreateElement(sTag, sId, oN, eleParent, iIndex, comp, variables, onCreateFn);
+
                     DeclareMarkup.DOMMediaNodeCreated(eleNew);
                     break;
                 case 'text':
@@ -9240,9 +9926,11 @@ jQuery.extend( jQuery.easing,
                     if(oN.font) {
                         var oN_font = oN.font;
                         if(oN_font[0] && oN_font[0] !== "") $eleNew.css("font-family", oN_font[0]);
-                        if(typeof(oN_font[1]) != "object") oN_font[1] = [oN_font[1]];
-                        if(!oN_font[1][1]) oN_font[1][1] = "px";
-                        if(oN_font[1][0] && oN_font[1][0] !== "") $eleNew.css("font-size", oN_font[1][0] + oN_font[1][1]);
+                        if(oN_font[1] !== null) {
+                            if(typeof(oN_font[1]) !== "object") oN_font[1] = [oN_font[1]];
+                            if(!oN_font[1][1]) oN_font[1][1] = "px";
+                            if(oN_font[1][0] && oN_font[1][0] !== "") $eleNew.css("font-size", oN_font[1][0] + oN_font[1][1]);
+                        }
                         if(oN_font[2] && oN_font[2] !== "") $eleNew.css("color", Edge.colorToSupported(oN_font[2]));
                         if(oN_font[3] && oN_font[3] !== "") $eleNew.css("font-weight", oN_font[3]);
                         if(oN_font[4] && oN_font[4] !== "") $eleNew.css("text-decoration", oN_font[4]);
@@ -9256,20 +9944,20 @@ jQuery.extend( jQuery.easing,
                     if(oN.position) {
                         eleNew.style.position=oN.position;
                     }
-
-                    if((!oN.rect[2] || oN.rect[2] <= 0) && (!oN.rect[3] || oN.rect[3] <= 0)) {
+                    if((!oN.rect[2] || oN.rect[2] <= 0 || oN.rect[2] == "auto") && (!oN.rect[3] || oN.rect[3] <= 0 || oN.rect[3] == "auto")) {
                         $eleNew.css("white-space", "nowrap");
                     }
-                    
+
                     eleNew.appendChild(document.createTextNode(''));
                     bindContentPropertyVariable(variables, oN.text, eleNew, "text", function(ele, propName, value) {
-                        if ($(ele).get(0)) {    
+                        if ($(ele).get(0)) {
                             $(ele).html(value);
                         }
                     });
 
                     break;
                 default:
+                    //console.log('unhandled type == ' + oN.t);
                     break;
             }
             return eleNew;
@@ -9290,6 +9978,7 @@ jQuery.extend( jQuery.easing,
                     for(var iC=0;iC<oN.c.length;iC++) {
                         var oChild = oN.c[iC];
                         var sChildId = oChild.id;
+                        //buildSceneGraphNode(sChildId, oChild, oN, eleNew, variables, iIndex, comp);
                         buildSceneGraphNode(sChildId, oChild, oN, eleNew, variables, iC, comp);
                     }
                 }
@@ -9391,6 +10080,3 @@ jQuery.extend( jQuery.easing,
     }();
     Edge.DeclareMarkup = DeclareMarkup;
 })(jQuery, AdobeEdge);
-
-
-

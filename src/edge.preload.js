@@ -1,6 +1,6 @@
-// edge.preload.js - version 0.1.4 - Edge Release 1.0
+// edge.preload.js
 //
-// Copyright (c) 2010. Adobe Systems Incorporated.
+// Copyright (c) 2010-2014. Adobe Systems Incorporated.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -127,10 +127,16 @@ AdobeEdge.requestResources = AdobeEdge.requestResources || function( files, cb )
     for ( i = 0; i < len; i++ ) {
         o = files[i];
         if(typeof o === "string") {
+            if (o.indexOf("//") === 0 && window.location.href.indexOf("file://") === 0) {
+                o = "http:" + o;
+            }
             url = o;
             o = {load: url};
         }
         else {
+            if (o.load && o.load.indexOf("//") === 0 && window.location.href.indexOf("file://") === 0) {
+                o.load = "http:" + o.load;
+            }
             url = o.yep || o.load;
             if(o.callback) {
                 var fnCb = o.callback;
@@ -154,7 +160,22 @@ AdobeEdge.requestResources = AdobeEdge.requestResources || function( files, cb )
     }
 }
 
-var filesToLoad, dlContent, preContent, doDelayLoad, signaledLoading, loadingEvt, requiresSVG, htLookup={}, aLoader, aEffectors;
+var filesToLoad,
+    dlContent,
+    preContent,
+    doDelayLoad,
+    signaledLoading,
+    loadingEvt,
+    requiresSVG,
+    htLookup = {},
+    aLoader,
+    aEffectors,
+    plSTF,
+    ctrPlS,
+    minPlW, 
+    maxPlW,
+    plHeight,
+    plWidth;
 
 function loadResources( files, delayLoad ) {
     AdobeEdge.preload = AdobeEdge.preload || [];
@@ -210,6 +231,148 @@ function findNWC(node, cls) {
     return false;
 }
 
+
+function parent(ele) {
+    return ele.parentElement;
+}
+
+function offset(e) {
+    var o = e.getBoundingClientRect();
+    return {
+        left: o.left + window.pageXOffset,
+        top: o.top + window.pageYOffset
+    };
+}
+
+function width(e) {
+    return e.offsetWidth;
+}
+
+function height(e) {
+    return e.offsetHeight;
+}
+function isWrapped(ele) {
+    return /center-wrapper/.test(parent(ele).className); // we always double wrap so just check for inner wrap
+}
+// wrapForStageScaling
+function wrapForStageScaling(stg) {
+    // Wrap in 2 divs. Inner is for centering. Outer is to push sibs in flow down below.
+    // They both get their size adjusted when we scale the stage.
+    if (!isWrapped(stg)) {
+        var fWpr = document.createElement('div'),
+            cWpr = document.createElement('div');
+        fWpr.className = 'flow-wrapper';
+        cWpr.className = 'center-wrapper';
+        fWpr.style.width = '1px';
+        fWpr.appendChild(cWpr);
+        parent(stg).insertBefore(fWpr, stg);
+        cWpr.appendChild(stg);
+    }
+}
+
+//bindPreloadStageScaling
+function bindPSS(stg, stf) { // stf == scaleToFit
+    if (!isWrapped(stg)) {
+        function scalePreStage() {
+            var wrapped = isWrapped(stg),
+                prnt = wrapped ? parent(parent(parent(stg))) : parent(stg),
+                prntW = width(prnt),
+                prntHt = height(prnt),
+                stgW = width(stg),
+                stgHt = height(stg),
+                browserHeight = window.innerHeight,
+                desiredW,
+                desiredHt,
+                rescaleW,
+                rescaleH,
+                rescale = 1,
+                origin,
+                flowParent,
+                stl = stg.style,
+                isParentBody = prnt.nodeName.toLowerCase() === 'body',
+                val;
+            if (isParentBody) {
+                prntHt = browserHeight;
+            }
+
+            desiredW = Math.round(prntW);
+            desiredHt = Math.round(prntHt);
+            rescaleW = desiredW / stgW;
+            rescaleH = desiredHt / stgHt;
+
+            if (stf === 'both') {
+                rescale = Math.min(rescaleW, rescaleH);
+            } else if (stf === 'height') {
+                rescale = rescaleH;
+            } else if (stf === 'width') {
+                rescale = rescaleW;
+            }
+            // preloader min-width and max-width are written out as maxPlW and minPlW respectively
+            if (maxPlW !== undefined) {
+                rescale = Math.min(rescale, parseInt(maxPlW, 10) / stgW);
+            }
+            if (minPlW !== undefined) {
+                rescale = Math.max(rescale, parseInt(minPlW, 10) / stgW);
+            }
+            origin = '0 0';
+            val = 'scale(' + rescale + ')'
+            stl.transformOrigin = origin;
+            stl.oTransformOrigin = origin;
+            stl.msTransformOrigin = origin;
+            stl.webkitTransformOrigin = origin;
+            stl.mozTransformOrigin = origin;
+            stl.oTransformOrigin = origin;
+            stl.transform = val;
+            stl.oTransform = val;
+            stl.msTransform = val;
+            stl.webkitTransform = val;
+            stl.mozTransform = val;
+            stl.oTransform = val;
+            if (!isParentBody || wrapped) {
+                // Handle the centering wrapper so it's the same size - without this wrapper, centering would try to work on
+                // the non-transformed size, so it would break when the parent gets smaller than the stg
+                parent(stg).style.height = Math.round(stgHt * rescale) + 'px';
+                parent(stg).style.width = Math.round(stgW * rescale) + 'px';
+            }
+            if (wrapped) {
+                // Flowparent
+                flowParent = parent(parent(stg));
+                flowParent.style.height = Math.round(stgHt * rescale + offset(stg).top - offset(flowParent).top);
+            }
+        }
+
+        wrapForStageScaling(stg);
+
+        window.addEventListener('resize', function () {
+            scalePreStage();
+        });
+        scalePreStage();
+    }
+}
+
+// centerThePreloadStage
+function centerThePreloadStage(stg, ctrStage) {
+    if (isWrapped(stg)) {
+        stg = parent(stg);
+    }
+    var stl = stg.style;
+    if (/^both$|^horizontal$/.test(ctrStage)) {
+        stl.position = 'absolute';
+        stl.marginLeft = 'auto';
+        stl.marginRight = 'auto';
+        stl.left = '0';
+        stl.right = '0';
+    }
+    if (/^both$|^vertical$/.test(ctrStage)) {
+        // Note we assume the stage height is already specified to make this work
+        stl.position = 'absolute';
+        stl.marginTop = 'auto';
+        stl.marginBottom = 'auto';
+        stl.top = '0';
+        stl.bottom = '0';
+    }
+}
+
 function simpleContent(dom, cls, stg) {
 	
     var oB = document.getElementsByTagName('body')[0],
@@ -224,10 +387,27 @@ function simpleContent(dom, cls, stg) {
             oS.style.position = 'relative';
         }
     }
-    
+
+    if(plHeight){
+        oS.style.height = plHeight;
+    }
+    if(plWidth){
+        oS.style.width = plWidth;
+    }
+    // preloadScaleToFit flag is written out as plSTF
+    // Check cls to avoid writing for downlevel, and stg to only do it for
+    // stage itself
+    if (/^height$|^width$|^both$/.test(plSTF) && cls && !stg) {
+        bindPSS(oS, plSTF);
+    }
+    // centerPreloaderStage flag is written out as ctrPlS
+    if (/^vertical$|^horizontal$|^both$/.test(ctrPlS) && cls && !stg) {
+        centerThePreloadStage(oS, ctrPlS);
+    }
+
 	for(var i=0;i<dom.length;i++) {
 		oN = dom[i];
-        if(oN.type == "image") {
+        if(oN.type === "image") {
             eN = document.createElement("img");
             eN.src=oN.fill[1];
         }
@@ -446,7 +626,7 @@ function onDocLoaded( e ) {
 		}
 	}
 	else {
-		if(preContent && preContent.dom){
+		if(preContent && preContent.dom && preContent.dom.length){
 			simpleContent(preContent.dom, "edgePreload" + compId);
 		}
 		if(filesToLoad && !signaledLoading){
