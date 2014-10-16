@@ -1,6 +1,6 @@
 {
   "name": "edge-runtime",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "homepage": "https://github.com/wittnl/Edge-Animate-Runtime",
   "authors": [
     "Adobe Systems Incorporated"
@@ -20,7 +20,5 @@
     "test",
     "tests"
   ],
-  "dependencies": {
-    "jquery": "2.0.3"
-  }
+  "dependencies": {}
 }
